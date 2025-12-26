@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+'use client';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -294,15 +295,88 @@ export default function Home() {
               </div>
 
               <Tabs defaultValue="words" className="flex-1 flex flex-col overflow-hidden">
-                <TabsList className="grid grid-cols-4 w-full bg-white border-b rounded-none h-14">
+                <TabsList className="grid grid-cols-3 w-full bg-white border-b rounded-none h-14">
                   <TabsTrigger value="words" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">文字</TabsTrigger>
                   <TabsTrigger value="background" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">背景</TabsTrigger>
                   <TabsTrigger value="breathing" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">深呼吸</TabsTrigger>
-                  <TabsTrigger value="sync" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">連動</TabsTrigger>
                 </TabsList>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
                   <TabsContent value="words" className="space-y-8 mt-0">
+                    {/* 深呼吸連動言葉表示設定 - 文字タブの上部に統合 */}
+                    <div className="border-b pb-8">
+                      <h3 className="text-sm font-bold text-slate-900 mb-4">深呼吸連動設定</h3>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold text-slate-700">深呼吸連動言葉を表示</Label>
+                        <Switch checked={breathingSyncWordsVisible} onCheckedChange={setBreathingSyncWordsVisible} />
+                      </div>
+
+                      {breathingSyncWordsVisible && (
+                        <>
+                          <div className="space-y-4 mb-4">
+                            <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
+                            <Select value={breathingSyncWordsMode} onValueChange={(val: any) => setBreathingSyncWordsMode(val)}>
+                              <SelectTrigger className="w-full h-12 rounded-xl bg-white">
+                                <SelectValue placeholder="モードを選択" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="falling">言葉が降る</SelectItem>
+                                <SelectItem value="breathing">深呼吸と連動</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {breathingSyncWordsMode === 'breathing' && (
+                            <>
+                              <div className="space-y-4 mb-4">
+                                <Label className="text-sm font-semibold text-slate-700">文字サイズ ({breathingSyncWordSize}px)</Label>
+                                <Slider 
+                                  value={[breathingSyncWordSize]} 
+                                  min={16} 
+                                  max={64} 
+                                  step={2} 
+                                  onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
+                                />
+                              </div>
+
+                              <div className="space-y-4 mb-4">
+                                <Label className="text-sm font-semibold text-slate-700">色</Label>
+                                <div className="flex gap-3">
+                                  <input 
+                                    type="color" 
+                                    value={breathingSyncWordColor} 
+                                    onChange={(e) => setBreathingSyncWordColor(e.target.value)}
+                                    className="w-12 h-12 rounded-xl cursor-pointer border-none"
+                                  />
+                                  <div className="flex-1 flex items-center px-4 bg-white border rounded-xl text-sm text-slate-600">
+                                    {breathingSyncWordColor.toUpperCase()}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <Label className="text-sm font-semibold text-slate-700">現在の言葉</Label>
+                                <div className="p-4 bg-white border rounded-xl text-center text-slate-700 font-semibold">
+                                  {breathingSyncWord}
+                                </div>
+                                <Button 
+                                  className="w-full h-12 rounded-xl"
+                                  onClick={() => {
+                                    const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+                                    setBreathingSyncWord(randomWord);
+                                  }}
+                                >
+                                  言葉を変更
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* 従来の文字設定 */}
                     <div className="space-y-4">
                       <Label className="text-sm font-semibold text-slate-700">速度 ({(speed / 1000).toFixed(1)}秒)</Label>
                       <Slider 
@@ -464,76 +538,6 @@ export default function Home() {
                             </div>
                           </div>
                         </div>
-                      </>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="sync" className="space-y-8 mt-0">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold text-slate-700">深呼吸連動言葉を表示</Label>
-                      <Switch checked={breathingSyncWordsVisible} onCheckedChange={setBreathingSyncWordsVisible} />
-                    </div>
-
-                    {breathingSyncWordsVisible && (
-                      <>
-                        <div className="space-y-4">
-                          <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
-                          <Select value={breathingSyncWordsMode} onValueChange={(val: any) => setBreathingSyncWordsMode(val)}>
-                            <SelectTrigger className="w-full h-12 rounded-xl bg-white">
-                              <SelectValue placeholder="モードを選択" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="falling">言葉が降る</SelectItem>
-                              <SelectItem value="breathing">深呼吸と連動</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {breathingSyncWordsMode === 'breathing' && (
-                          <>
-                            <div className="space-y-4">
-                              <Label className="text-sm font-semibold text-slate-700">文字サイズ ({breathingSyncWordSize}px)</Label>
-                              <Slider 
-                                value={[breathingSyncWordSize]} 
-                                min={16} 
-                                max={64} 
-                                step={2} 
-                                onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
-                              />
-                            </div>
-
-                            <div className="space-y-4">
-                              <Label className="text-sm font-semibold text-slate-700">色</Label>
-                              <div className="flex gap-3">
-                                <input 
-                                  type="color" 
-                                  value={breathingSyncWordColor} 
-                                  onChange={(e) => setBreathingSyncWordColor(e.target.value)}
-                                  className="w-12 h-12 rounded-xl cursor-pointer border-none"
-                                />
-                                <div className="flex-1 flex items-center px-4 bg-white border rounded-xl text-sm text-slate-600">
-                                  {breathingSyncWordColor.toUpperCase()}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-4">
-                              <Label className="text-sm font-semibold text-slate-700">現在の言葉</Label>
-                              <div className="p-4 bg-white border rounded-xl text-center text-slate-700 font-semibold">
-                                {breathingSyncWord}
-                              </div>
-                              <Button 
-                                className="w-full h-12 rounded-xl"
-                                onClick={() => {
-                                  const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
-                                  setBreathingSyncWord(randomWord);
-                                }}
-                              >
-                                言葉を変更
-                              </Button>
-                            </div>
-                          </>
-                        )}
                       </>
                     )}
                   </TabsContent>
