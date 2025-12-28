@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Pause, Play, Settings, X } from "lucide-react";
+import { Pause, Play, Settings, X, RotateCw, Wind } from "lucide-react";
 
 // ポジティブな日本語の言葉のみ
 const POSITIVE_WORDS = [
@@ -16,31 +16,6 @@ const POSITIVE_WORDS = [
   '信じよう', '輝いている', '素敵', '美しい', '愛してる', '応援してる', '頑張って', 'ファイト', '負けないで', '勇気を出して',
   '一歩ずつ', '焦らないで', 'ゆっくりでいい', '自分らしく', '自分を信じて', '自分を大切に', '自分を愛して', '今日も良い日', '明日はもっと良くなる', 'きっと大丈夫',
   '必ずできる', 'あなたならできる', '可能性は無限', '夢は叶う', '奇跡は起こる', '運が良い', 'ツイてる', 'ラッキー', 'ハッピー', 'ピース',
-  'あなたはあなたであればいい', '自分なんかダメだなんて思わない', '他人と比べなくていい', '自分の良さに気づこう', '幸せだと思えることを続けよう', '明けない夜はない',
-  'やまない雨はない', '良いことが必ずやってくる', '自分で自分を褒めてあげよう', '今日がよくなかっただけ', '生まれたことに感謝', '自分らしい人生を歩もう', 'その人にしか出せない輝きがある', '自分を信じてあげよう', '自分が持っているものを大切に', '小さな幸せを実感しよう',
-  '自分のやりたいようにやってみよう', 'いくつになっても可能性は無限', '過去にとらわれすぎない', '前を向いて進もう', '自分の魅力や才能に自信を持とう', '身体をいたわる時間を作ろう', '当たり前の日々の大切さを感じよう', '普通の幸せのありがたさ', '前に進んでみよう', '新しい景色が見えてくる',
-  'ぶれない芯を持とう', '幸せは周りにあふれている', '助けてくれる人が近くにいる', '自分らしさを見失わない', '一人ではない', '支え合って生きている', '心を整える', '自分を好きになる', '心豊かに生きる', '希望を持ち続ける',
-  'ありのままの自分を受け入れる', 'ありのままの自分を愛する', '内側から美しく輝く', '一日の始まりを丁寧に', '本当の自分を見つける', '楽しいことに想いをはせる', '感謝の気持ちを持つ', '幸せを実感する', '心を磨く', 'きっと良くなる',
-  '生きているだけで価値がある', '前向きに気持ちを向上させる', '心が軽くなる', '自分の心のコップを満たす', '深呼吸しよう', '肩の力を抜こう', '今日生きていることに感謝', 'すべて上手くいっている', '自分は運がいい', '今日もいい日だった',
-  'おはよう、素敵な一日を', 'おやすみ、良い夢を', '今日もお疲れ様', 'よく頑張ったね', 'えらいね', 'すごいね', 'さすがだね', '素晴らしい', '最高', '完璧',
-  'あなたがいると場が和む', '一緒にいるとポジティブになれる', '癒されるよ', '笑顔が素敵だね', '気が利くよね', '気配りが上手だね', 'キラキラしているね', '行動力があるね', '誰からも好かれるタイプだよね', 'ファッションセンスがいいよね', '勇気があるね',
-  '前向きで励みになる', '意見が的確だよね', '集中力があるよね', '話し上手だよね', '聞き上手だよね', '信頼しているよ', '頼りになるよ', '器が大きいね', '存在感があるね', 'センスがあるね',
-  '人間味があるね', '手際がいいね', '豪快だね', 'ひとりできたんだね', '今日も元気いっぱいだね', 'お友だちに優しいところが素敵だね', 'お手伝いしてくれて助かったよ、ありがとう', 'ママ（パパ）はあなたのことが正しいと思うよ', 'チャレンジしたことがすごいんだよ', 'よく気づくことができたね',
-  'ママ（パパ）はどんなことがあってもあなたを応援するからね', 'あなたがいるだけで幸せだよ', 'やればできるんだね', 'さすがだね', '最後までやり遂げたことがすごいことだよ', '諦めない姿が素敵だよ', 'みんなを元気にしてくれるね', '自分の意見を言えるのはすごいね', '努力しているのは知っているよ', 'すっかり大人になったね',
-  '思い切ってやってごらん', 'がんばっているのは知っているからね', '本当に助かっているよ', 'よく気づいてくれるよね', 'がんばりすぎないことも大切だよ', '自分もあなたみたいになりたいです', '本当になんでも知っていますよね',
-  '自分を責めないで', '大丈夫、あなたは一人じゃない', 'ゆっくり休んでね', 'あなたのペースでいいよ', '無理しないでね', 'いつもありがとう', '感謝しています', 'あなたの存在が宝物', 'あなたは愛されている', 'あなたは大切な人',
-  'あなたの笑顔が世界を救う', 'あなたは光だ', 'あなたは希望だ', 'あなたは奇跡だ', 'あなたは美しい', 'あなたは強い', 'あなたは優しい', 'あなたは賢い', 'あなたは正しい', 'あなたは自由だ',
-  'あなたの未来は明るい', 'あなたの可能性は無限大', 'あなたの夢は叶う', 'あなたの願いは届く', 'あなたの心は清らか', 'あなたの魂は輝いている', 'あなたの人生は素晴らしい', 'あなたの選択は間違っていない', 'あなたの決断を信じる', 'あなたの直感を大切に',
-  '自分を許すこと', '過去は変えられないが未来は変えられる', '失敗は成功のもと', 'ピンチはチャンス', '困難を乗り越えられる力がある', '試練は成長の機会', '雨のち晴れ', '明けない夜はない', '冬は必ず春となる', '塞翁が馬',
-  '一期一会を大切に', '今を生きる', '感謝の気持ちを忘れずに', '愛と光に満たされている', 'すべてはうまくいっている', '宇宙はあなたを応援している', '神様はあなたを見守っている', 'ご先祖様に感謝', '生かされていることに感謝', 'ありがとうの魔法',
-  '愛してるの力', '幸せはいつも自分の心が決める', '心が変われば行動が変わる', '行動が変われば習慣が変わる', '習慣が変われば人格が変わる', '人格が変われば運命が変わる', '運命が変われば人生が変わる', '人生は一度きり', '後悔のないように生きる', '自分らしく輝く',
-  '自分を大切にする時間', '心と体を休める', '深呼吸でリフレッシュ', '自然の力に癒される', '音楽の力に癒される', 'アートの力に癒される', '読書の力に癒される', '映画の力に癒される', '旅の力に癒される', '食の力に癒される',
-  '笑う門には福来る', '病は気から', '健康第一', '笑顔が一番', 'ポジティブ思考', 'ネガティブな感情も大切', '感情を解放する', '泣きたいときは泣けばいい', '怒りたいときは怒ればいい', 'ありのままの自分を表現',
-  '他人の評価を気にしない', '自分軸で生きる', '自分の価値は自分で決める', '自分を愛する', '自分を尊重する', '自分を信頼する', '自分を信じる', '自分を許す', '自分を褒める', '自分を励ます',
-  'あなたは唯一無二の存在', 'あなたはかけがえのない存在', 'あなたは特別な存在', 'あなたは愛されるために生まれてきた', 'あなたは幸せになるために生まれてきた', 'あなたは夢を叶えるために生まれてきた', 'あなたは使命を果たすために生まれてきた', 'あなたは光を放つ存在', 'あなたは愛の塊', 'あなたは無限の可能性',
-  '今日も一日お疲れ様', 'ゆっくり休んでね', '明日も頑張ろう', '無理せず自分のペースで', 'いつも応援しているよ', 'あなたの味方だよ', '困ったらいつでも頼ってね', '一人で抱え込まないで', '一緒に乗り越えよう', '大丈夫、心配ないよ',
-  'あなたは強いから大丈夫', 'あなたは乗り越えられる', 'あなたは成長している', 'あなたは進化している', 'あなたは変化している', 'あなたは輝いている', 'あなたは美しい', 'あなたは素敵だ', 'あなたは最高だ', 'あなたは完璧だ',
-  'あなたは天才だ', 'あなたは才能に溢れている', 'あなたは創造性に富んでいる', 'あなたはインスピレーションの源', 'あなたは希望の星', 'あなたは未来の光', 'あなたは愛の使者', 'あなたは平和の象徴', 'あなたは幸せの配達人', 'あなたは喜びの種',
 ];
 
 // グラデーション配色パレット
@@ -94,18 +69,6 @@ const processWord = (word: string, excludeWords: string[]): string => {
   return processed;
 };
 
-// 色の補色を計算するヘルパー関数
-const getComplementaryColor = (hex: string) => {
-  if (!hex.startsWith('#')) return hex;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const compR = (255 - r).toString(16).padStart(2, '0');
-  const compG = (255 - g).toString(16).padStart(2, '0');
-  const compB = (255 - b).toString(16).padStart(2, '0');
-  return `#${compR}${compG}${compB}`;
-};
-
 // ランダムなグラデーションペアを生成
 const generateRandomGradient = () => {
   const palette = GRADIENT_PALETTES[Math.floor(Math.random() * GRADIENT_PALETTES.length)];
@@ -156,7 +119,7 @@ export default function Home() {
   const [isFallingWordsVisible, setIsFallingWordsVisible] = useState(false);
   const [isFallingWordsPaused, setIsFallingWordsPaused] = useState(false);
   const [speed, setSpeed] = useState(15000);
-  const [frequency, setFrequency] = useState(300); // A6: デフォルト出現頻度を半分に
+  const [frequency, setFrequency] = useState(300);
   const [showSettings, setShowSettings] = useState(false);
   
   // 背景設定
@@ -165,18 +128,17 @@ export default function Home() {
   const [meteorShowerVisible, setMeteorShowerVisible] = useState(false);
   const [customBackgroundImage, setCustomBackgroundImage] = useState<string | null>(null);
   const [imageBackgroundVisible, setImageBackgroundVisible] = useState(false);
-  const [autoComplementaryMode, setAutoComplementaryMode] = useState(false);
   
   // 深呼吸設定
   const [breathingVisible, setBreathingVisible] = useState(true);
-  const [breathingSpeed, setBreathingSpeed] = useState(16000); // A6: デフォルト深呼吸速度を16秒に
+  const [breathingSpeed, setBreathingSpeed] = useState(16000);
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
   const [guideGradient, setGuideGradient] = useState(['#eecda3', '#ef629f']);
   
   // 深呼吸連動言葉表示設定
-  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
+  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(false);
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
@@ -350,20 +312,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [breathingSpeed]);
 
-  // 自動補色モード
-  useEffect(() => {
-    if (!autoComplementaryMode) return;
-
-    const guideBg = guideGradient[0];
-    const complementary = getComplementaryColor(guideBg);
-    
-    // 補色から背景グラデーションを生成
-    const palette = GRADIENT_PALETTES.find(p => p[0] === complementary || p[1] === complementary);
-    if (palette) {
-      setBgGradient(palette);
-    }
-  }, [autoComplementaryMode, guideGradient]);
-
   // 深呼吸ガイドの色をランダムに変更
   const randomizeGuideGradient = () => {
     const palette = generateRandomGradient();
@@ -505,18 +453,43 @@ export default function Home() {
         </div>
       )}
 
-      {/* コントロールボタン */}
+      {/* ホーム画面左上のコントロールボタン */}
       <div className="absolute top-4 left-4 flex gap-2 z-50">
+        {/* 言葉が降るON/OFF */}
         <button
           ref={pauseButtonRef}
           onClick={() => setIsFallingWordsVisible(!isFallingWordsVisible)}
           className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+          title="言葉が降る"
         >
           {isFallingWordsVisible ? <Pause size={20} /> : <Play size={20} />}
         </button>
+
+        {/* 背景グラデーションランダム */}
+        <button
+          onClick={randomizeBgGradient}
+          className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+          title="背景グラデーション"
+        >
+          <RotateCw size={20} />
+        </button>
+
+        {/* 深呼吸ガイド色ランダム */}
+        <button
+          onClick={randomizeGuideGradient}
+          className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+          title="深呼吸ガイド色"
+        >
+          <Wind size={20} />
+        </button>
+      </div>
+
+      {/* ホーム画面右上の設定ボタン */}
+      <div className="absolute top-4 right-4 z-50">
         <button
           onClick={() => setShowSettings(!showSettings)}
           className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+          title="設定"
         >
           <Settings size={20} />
         </button>
@@ -524,7 +497,7 @@ export default function Home() {
 
       {/* 設定パネル */}
       {showSettings && (
-        <div className="absolute top-16 left-4 w-96 bg-white rounded-lg shadow-2xl p-6 max-h-96 overflow-y-auto z-50">
+        <div className="absolute top-16 right-4 w-96 bg-white rounded-lg shadow-2xl p-6 max-h-96 overflow-y-auto z-50">
           <Tabs defaultValue="words" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="words">言葉</TabsTrigger>
@@ -535,11 +508,11 @@ export default function Home() {
             {/* 言葉タブ */}
             <TabsContent value="words" className="space-y-4">
               <div>
-                <Label>速度（ms）</Label>
+                <Label>速度（ms）: {speed}</Label>
                 <Slider value={[speed]} onValueChange={(v) => setSpeed(v[0])} min={5000} max={30000} step={1000} />
               </div>
               <div>
-                <Label>出現頻度（ms）</Label>
+                <Label>出現頻度（ms）: {frequency}</Label>
                 <Slider value={[frequency]} onValueChange={(v) => setFrequency(v[0])} min={100} max={1000} step={50} />
               </div>
               <div>
@@ -573,55 +546,51 @@ export default function Home() {
             {/* 呼吸タブ */}
             <TabsContent value="breathing" className="space-y-4">
               <div>
-                <Label>深呼吸速度（ms）</Label>
+                <Label>深呼吸速度（ms）: {breathingSpeed}</Label>
                 <Slider value={[breathingSpeed]} onValueChange={(v) => setBreathingSpeed(v[0])} min={5000} max={30000} step={1000} />
               </div>
               <div>
-                <Label>文字色</Label>
-                <div className="flex gap-2">
-                  {(['white', 'black', 'gray'] as const).map((color) => (
-                    <Button
-                      key={color}
-                      onClick={() => setBreathingSyncWordColor(color)}
-                      variant={breathingSyncWordColor === color ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      {color}
-                    </Button>
-                  ))}
-                </div>
+                <Label>深呼吸と連動</Label>
+                <Switch checked={breathingSyncWordsVisible} onCheckedChange={setBreathingSyncWordsVisible} />
               </div>
-              <div>
-                <Label>深呼吸ガイド色</Label>
-                <Button onClick={randomizeGuideGradient} size="sm" className="w-full">ランダム</Button>
-              </div>
+              {breathingSyncWordsVisible && (
+                <>
+                  <div>
+                    <Label>文字色</Label>
+                    <div className="flex gap-2">
+                      {(['white', 'black', 'gray'] as const).map((color) => (
+                        <Button
+                          key={color}
+                          onClick={() => setBreathingSyncWordColor(color)}
+                          variant={breathingSyncWordColor === color ? 'default' : 'outline'}
+                          size="sm"
+                        >
+                          {color}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </TabsContent>
 
             {/* 背景タブ */}
             <TabsContent value="background" className="space-y-4">
-              <div>
-                <Label>背景グラデーション</Label>
-                <Button onClick={randomizeBgGradient} size="sm" className="w-full mb-2">ランダム</Button>
-              </div>
-              <div>
-                <Label>自動補色モード</Label>
-                <Switch checked={autoComplementaryMode} onCheckedChange={setAutoComplementaryMode} />
-              </div>
               <div>
                 <Label>星空</Label>
                 <Switch checked={starfieldVisible} onCheckedChange={setStarfieldVisible} />
                 {starfieldVisible && (
                   <div className="space-y-2 mt-2">
                     <div>
-                      <Label>出現数</Label>
+                      <Label>出現数: {starfieldFrequency}</Label>
                       <Slider value={[starfieldFrequency]} onValueChange={(v) => setStarfieldFrequency(v[0])} min={10} max={200} step={10} />
                     </div>
                     <div>
-                      <Label>大きさ</Label>
+                      <Label>大きさ: {starfieldSize}</Label>
                       <Slider value={[starfieldSize]} onValueChange={(v) => setStarfieldSize(v[0])} min={1} max={10} step={1} />
                     </div>
                     <div>
-                      <Label>速度（秒）</Label>
+                      <Label>速度（秒）: {starfieldSpeed}</Label>
                       <Slider value={[starfieldSpeed]} onValueChange={(v) => setStarfieldSpeed(v[0])} min={1} max={10} step={1} />
                     </div>
                   </div>
@@ -633,15 +602,15 @@ export default function Home() {
                 {meteorShowerVisible && (
                   <div className="space-y-2 mt-2">
                     <div>
-                      <Label>出現頻度（ms）</Label>
+                      <Label>出現頻度（ms）: {meteorFrequency}</Label>
                       <Slider value={[meteorFrequency]} onValueChange={(v) => setMeteorFrequency(v[0])} min={200} max={2000} step={100} />
                     </div>
                     <div>
-                      <Label>大きさ</Label>
+                      <Label>大きさ: {meteorSize}</Label>
                       <Slider value={[meteorSize]} onValueChange={(v) => setMeteorSize(v[0])} min={1} max={10} step={1} />
                     </div>
                     <div>
-                      <Label>速度（秒）</Label>
+                      <Label>速度（秒）: {meteorSpeed}</Label>
                       <Slider value={[meteorSpeed]} onValueChange={(v) => setMeteorSpeed(v[0])} min={1} max={10} step={1} />
                     </div>
                   </div>
