@@ -138,7 +138,7 @@ export default function Home() {
   const [guideGradient, setGuideGradient] = useState(['#eecda3', '#ef629f']);
   
   // 深呼吸連動言葉表示設定
-  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(false);
+  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
@@ -278,13 +278,14 @@ export default function Home() {
     };
   }, [meteorShowerVisible, meteorFrequency, meteorSize, meteorShape, meteorSpeed]);
 
-  // 深呼吸連動言葉の初期化とランダム更新
+  // 深呼吸連動言葉の初期化とランダム更新（深呼吸速度と完全に同期）
   useEffect(() => {
     if (!breathingSyncWordsVisible) {
       setBreathingSyncWord('');
       return;
     }
 
+    // 初回の言葉を設定
     const updateBreathingWord = () => {
       if (breathingWordSelectionMode === 'random') {
         const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
@@ -293,7 +294,12 @@ export default function Home() {
     };
 
     updateBreathingWord();
-    const interval = setInterval(updateBreathingWord, breathingSpeed);
+
+    // 深呼吸速度と完全に同期するタイマー
+    // 深呼吸ガイドが最小になるタイミング（breathingSpeed / 2）で言葉を切り替え
+    const interval = setInterval(() => {
+      updateBreathingWord();
+    }, breathingSpeed);
 
     return () => clearInterval(interval);
   }, [breathingSyncWordsVisible, breathingWordSelectionMode, breathingSpeed, excludeWords]);
