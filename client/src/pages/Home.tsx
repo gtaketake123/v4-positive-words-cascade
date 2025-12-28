@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw, Trash2 } from "lucide-react";
+import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw, Trash2, Cloud, Droplets } from "lucide-react";
 
 // ポジティブな日本語の言葉のみ
 const POSITIVE_WORDS = [
@@ -53,6 +53,8 @@ const GRADIENT_PALETTES = [
   ['#eecda3', '#ef629f'], ['#FF9A56', '#FF6A88'], ['#FFB347', '#FFAEC9'],
 ];
 
+type ShapeType = 'dot' | 'star' | 'circle' | 'square' | 'heart' | 'snow' | 'bubble';
+
 interface FallingWord {
   id: string;
   text: string;
@@ -69,6 +71,7 @@ interface Star {
   y: number;
   size: number;
   duration: number;
+  shape: ShapeType;
 }
 
 // 言葉を処理する関数
@@ -106,9 +109,44 @@ const generateRandomGradient = () => {
   return palette;
 };
 
+// シェイプを描画するコンポーネント
+const ShapeRenderer = ({ shape, size, color }: { shape: ShapeType; size: number; color: string }) => {
+  switch (shape) {
+    case 'dot':
+      return <div className="rounded-full" style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+    case 'star':
+      return (
+        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+          ★
+        </div>
+      );
+    case 'circle':
+      return <div className="rounded-full border-2" style={{ width: `${size}px`, height: `${size}px`, borderColor: color }} />;
+    case 'square':
+      return <div style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+    case 'heart':
+      return (
+        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+          ♥
+        </div>
+      );
+    case 'snow':
+      return (
+        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+          ❄
+        </div>
+      );
+    case 'bubble':
+      return <div className="rounded-full border-2" style={{ width: `${size}px`, height: `${size}px`, borderColor: color, opacity: 0.6 }} />;
+    default:
+      return <div className="rounded-full" style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+  }
+};
+
 export default function Home() {
   const [words, setWords] = useState<FallingWord[]>([]);
   const [stars, setStars] = useState<Star[]>([]);
+  const [isFallingWordsVisible, setIsFallingWordsVisible] = useState(false);
   const [isFallingWordsPaused, setIsFallingWordsPaused] = useState(false);
   const [speed, setSpeed] = useState(15000);
   const [frequency, setFrequency] = useState(600);
@@ -116,7 +154,6 @@ export default function Home() {
   const [wordDirection, setWordDirection] = useState<'down' | 'up'>('down');
   const [wordOpacity, setWordOpacity] = useState(100);
   const [randomSpeed, setRandomSpeed] = useState(false);
-  const [fallingWordsVisible, setFallingWordsVisible] = useState(true);
   
   // 背景設定
   const [bgGradient, setBgGradient] = useState(['#96fbc4', '#f9f586']);
@@ -139,6 +176,15 @@ export default function Home() {
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
+  const [breathingSyncWordColor, setBreathingSyncWordColor] = useState<'white' | 'black' | 'gray'>('white');
+  
+  // 星空・流星群設定
+  const [starfieldFrequency, setStarfieldFrequency] = useState(50);
+  const [starfieldSize, setStarfieldSize] = useState(2);
+  const [starfieldShape, setStarfieldShape] = useState<ShapeType>('dot');
+  const [meteorFrequency, setMeteorFrequency] = useState(400);
+  const [meteorSize, setMeteorSize] = useState(2);
+  const [meteorShape, setMeteorShape] = useState<ShapeType>('dot');
   
   // 除外ワード設定
   const [excludeWords, setExcludeWords] = useState<string[]>([]);
@@ -166,24 +212,16 @@ export default function Home() {
       ? (Math.random() * (30000 - 10000) + 10000) 
       : speed;
     
-    // 停止ボタンの位置を基準に計算
-    const pauseButtonRect = pauseButtonRef.current?.getBoundingClientRect();
-    const pauseY = pauseButtonRect?.top ?? 50;
-    const pauseX = pauseButtonRect?.left ?? 50;
-    
-    // y軸：停止ボタンから上下100の範囲
-    const topRange = Math.random() * 200 - 100; // -100 to 100
-    const top = pauseY + topRange;
-    
-    // x軸：停止ボタンから左右-100～1000の範囲
-    const leftRange = Math.random() * 1100 - 100; // -100 to 1000
-    const left = pauseX + leftRange;
+    // スマホ画面内に収まるように調整
+    const screenWidth = window.innerWidth;
+    const left = Math.random() * (screenWidth - 100);
+    const top = Math.random() * (window.innerHeight * 0.3);
     
     return {
       id: `word-${wordIdRef.current++}`,
       text,
-      left: Math.max(0, Math.min(left, window.innerWidth - 100)),
-      top: Math.max(0, top),
+      left,
+      top,
       duration: wordSpeed / 1000,
       fontSize,
       color: colors[Math.floor(Math.random() * colors.length)],
@@ -192,29 +230,33 @@ export default function Home() {
 
   // 星を生成
   const generateStar = (): Star => {
+    const colors = ['#ffffff', '#ffff99', '#ffccff'];
     return {
       id: `star-${starIdRef.current++}`,
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      size: Math.random() * 3 + 1,
+      size: starfieldSize,
       duration: Math.random() * 3 + 2,
+      shape: starfieldShape,
     };
   };
 
   // 流星を生成
   const generateMeteor = (): Star => {
+    const colors = ['#ffffff', '#ffff99'];
     return {
       id: `meteor-${starIdRef.current++}`,
       x: Math.random() * window.innerWidth,
       y: -50,
-      size: Math.random() * 2 + 0.5,
+      size: meteorSize,
       duration: Math.random() * 2 + 1,
+      shape: meteorShape,
     };
   };
 
   // 言葉を追加するループ
   useEffect(() => {
-    if (isFallingWordsPaused || !fallingWordsVisible || breathingSyncWordsMode === 'breathing') return;
+    if (isFallingWordsPaused || !isFallingWordsVisible || breathingSyncWordsMode === 'breathing') return;
 
     intervalRef.current = setInterval(() => {
       setWords((prev) => {
@@ -228,14 +270,14 @@ export default function Home() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [frequency, isFallingWordsPaused, speed, randomSpeed, breathingSyncWordsMode, fallingWordsVisible, excludeWords]);
+  }, [frequency, isFallingWordsPaused, speed, randomSpeed, breathingSyncWordsMode, isFallingWordsVisible, excludeWords]);
 
   // 星空モード
   useEffect(() => {
     if (!starfieldVisible) return;
     
-    setStars(Array.from({ length: 50 }, () => generateStar()));
-  }, [starfieldVisible]);
+    setStars(Array.from({ length: starfieldFrequency }, () => generateStar()));
+  }, [starfieldVisible, starfieldFrequency, starfieldSize, starfieldShape]);
 
   // 流星群モード
   useEffect(() => {
@@ -247,12 +289,12 @@ export default function Home() {
         const newStars = [...prev, newMeteor];
         return newStars.length > 30 ? newStars.slice(-30) : newStars;
       });
-    }, 800);
+    }, meteorFrequency);
 
     return () => {
       if (starIntervalRef.current) clearInterval(starIntervalRef.current);
     };
-  }, [meteorShowerVisible]);
+  }, [meteorShowerVisible, meteorFrequency, meteorSize, meteorShape]);
 
   // 深呼吸連動言葉の初期化とランダム更新
   useEffect(() => {
@@ -280,16 +322,25 @@ export default function Home() {
     setStars((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // 深呼吸ガイドの反対色を計算（文字色用）
-  const breathingSyncWordColor = useMemo(() => {
-    return getComplementaryColor(guideGradient[0]);
-  }, [guideGradient]);
-
   // フォントサイズを自動調整
   const autoFontSize = useMemo(() => {
     const maxSize = breathingMaxSize / 2;
     return Math.min(breathingSyncWordSize, maxSize);
   }, [breathingSyncWordSize, breathingMaxSize]);
+
+  // 深呼吸連動言葉の色を決定
+  const breathingSyncWordColorValue = useMemo(() => {
+    switch (breathingSyncWordColor) {
+      case 'white':
+        return '#ffffff';
+      case 'black':
+        return '#000000';
+      case 'gray':
+        return '#808080';
+      default:
+        return '#ffffff';
+    }
+  }, [breathingSyncWordColor]);
 
   const handleRandomizeBackgroundGradient = () => {
     const gradient = generateRandomGradient();
@@ -347,16 +398,16 @@ export default function Home() {
           {stars.map((star) => (
             <motion.div
               key={star.id}
-              className="absolute rounded-full bg-white"
+              className="absolute"
               style={{
                 left: `${(star.x / window.innerWidth) * 100}%`,
                 top: `${(star.y / window.innerHeight) * 100}%`,
-                width: `${star.size}px`,
-                height: `${star.size}px`,
               }}
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: star.duration, repeat: Infinity }}
-            />
+            >
+              <ShapeRenderer shape={star.shape} size={star.size} color="#ffffff" />
+            </motion.div>
           ))}
         </div>
       )}
@@ -367,24 +418,23 @@ export default function Home() {
           {stars.map((star) => (
             <motion.div
               key={star.id}
-              className="fixed rounded-full bg-white pointer-events-none z-0"
+              className="fixed pointer-events-none z-0"
               style={{
                 left: `${star.x}px`,
-                width: `${star.size}px`,
-                height: `${star.size}px`,
-                boxShadow: '0 0 10px rgba(255,255,255,0.8)',
               }}
               initial={{ y: star.y, opacity: 1 }}
               animate={{ y: window.innerHeight + 100, opacity: 0 }}
               transition={{ duration: star.duration, ease: 'linear' }}
               onAnimationComplete={() => removeStar(star.id)}
-            />
+            >
+              <ShapeRenderer shape={star.shape} size={star.size} color="#ffffff" />
+            </motion.div>
           ))}
         </AnimatePresence>
       )}
 
       {/* 降ってくる言葉 */}
-      {fallingWordsVisible && breathingSyncWordsMode === 'falling' && (
+      {isFallingWordsVisible && breathingSyncWordsMode === 'falling' && (
         <AnimatePresence>
           {words.map((word) => (
             <motion.div
@@ -436,7 +486,7 @@ export default function Home() {
               <motion.div
                 className="font-bold select-none text-center px-4"
                 style={{
-                  color: breathingSyncWordColor,
+                  color: breathingSyncWordColorValue,
                   fontSize: `${autoFontSize}px`,
                   textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 }}
@@ -464,10 +514,10 @@ export default function Home() {
           variant="secondary"
           size="icon"
           className="w-12 h-12 rounded-xl shadow-md bg-white/90 hover:bg-white text-slate-900"
-          onClick={() => setIsFallingWordsPaused(!isFallingWordsPaused)}
-          title="言葉が降るのみ停止/再生"
+          onClick={() => setIsFallingWordsVisible(!isFallingWordsVisible)}
+          title="言葉が降るON/OFF"
         >
-          {isFallingWordsPaused ? <Play size={20} /> : <Pause size={20} />}
+          {isFallingWordsVisible ? <Cloud size={20} /> : <Play size={20} />}
         </Button>
         <Button
           variant="secondary"
@@ -477,6 +527,15 @@ export default function Home() {
           title="背景色をランダムに変更"
         >
           <RefreshCw size={20} />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="w-12 h-12 rounded-xl shadow-md bg-white/90 hover:bg-white text-slate-900"
+          onClick={handleRandomizeGuideGradient}
+          title="深呼吸ガイド色をランダムに変更"
+        >
+          <Droplets size={20} />
         </Button>
       </div>
 
@@ -563,6 +622,25 @@ export default function Home() {
                           </div>
 
                           <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">文字色</Label>
+                            <div className="grid grid-cols-3 gap-3">
+                              {(['white', 'black', 'gray'] as const).map((color) => (
+                                <button
+                                  key={color}
+                                  onClick={() => setBreathingSyncWordColor(color)}
+                                  className={`h-10 rounded-lg text-sm font-semibold transition-all ${
+                                    breathingSyncWordColor === color
+                                      ? 'bg-slate-800 text-white'
+                                      : 'bg-white text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  {color === 'white' ? '白' : color === 'black' ? '黒' : 'グレー'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
                             <Label className="text-sm font-semibold text-slate-700">現在の言葉</Label>
                             <div className="p-4 bg-white border rounded-xl text-center text-slate-700 font-semibold">
                               {breathingSyncWord}
@@ -597,10 +675,10 @@ export default function Home() {
                     <div className="border-b pb-8">
                       <div className="flex items-center justify-between mb-4">
                         <Label className="text-sm font-bold text-slate-900">言葉が降る</Label>
-                        <Switch checked={fallingWordsVisible} onCheckedChange={setFallingWordsVisible} />
+                        <Switch checked={isFallingWordsVisible} onCheckedChange={setIsFallingWordsVisible} />
                       </div>
 
-                      {fallingWordsVisible && (
+                      {isFallingWordsVisible && (
                         <div className="space-y-6">
                           <div className="space-y-4">
                             <Label className="text-sm font-semibold text-slate-700">速度 ({(speed / 1000).toFixed(1)}秒)</Label>
@@ -732,6 +810,43 @@ export default function Home() {
                         <Label className="text-sm font-semibold text-slate-700">星空</Label>
                         <Switch checked={starfieldVisible} onCheckedChange={setStarfieldVisible} />
                       </div>
+                      {starfieldVisible && (
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">出現頻度 ({starfieldFrequency})</Label>
+                            <Slider value={[starfieldFrequency]} min={10} max={200} step={10} onValueChange={(val) => setStarfieldFrequency(val[0])} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">大きさ ({starfieldSize}px)</Label>
+                            <Slider value={[starfieldSize]} min={1} max={10} step={1} onValueChange={(val) => setStarfieldSize(val[0])} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">シェイプ</Label>
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {(['dot', 'star', 'circle', 'square', 'heart', 'snow', 'bubble'] as const).map((shape) => (
+                                <button
+                                  key={shape}
+                                  onClick={() => setStarfieldShape(shape)}
+                                  className={`h-8 rounded text-xs font-semibold transition-all ${
+                                    starfieldShape === shape
+                                      ? 'bg-slate-800 text-white'
+                                      : 'bg-white text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  {shape === 'dot' ? '点' : shape === 'star' ? '★' : shape === 'circle' ? '◯' : shape === 'square' ? '□' : shape === 'heart' ? '♥' : shape === 'snow' ? '❄' : '◉'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <Button className="w-full text-xs h-8" onClick={() => {
+                            setStarfieldFrequency(Math.floor(Math.random() * 190) + 10);
+                            setStarfieldSize(Math.floor(Math.random() * 9) + 1);
+                            setStarfieldShape(['dot', 'star', 'circle', 'square', 'heart', 'snow', 'bubble'][Math.floor(Math.random() * 7)] as ShapeType);
+                          }}>
+                            ランダムに変更
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {/* 流星群 */}
@@ -740,6 +855,43 @@ export default function Home() {
                         <Label className="text-sm font-semibold text-slate-700">流星群</Label>
                         <Switch checked={meteorShowerVisible} onCheckedChange={setMeteorShowerVisible} />
                       </div>
+                      {meteorShowerVisible && (
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">出現頻度 ({meteorFrequency}ms)</Label>
+                            <Slider value={[meteorFrequency]} min={100} max={1000} step={50} onValueChange={(val) => setMeteorFrequency(val[0])} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">大きさ ({meteorSize}px)</Label>
+                            <Slider value={[meteorSize]} min={1} max={10} step={1} onValueChange={(val) => setMeteorSize(val[0])} />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-700">シェイプ</Label>
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {(['dot', 'star', 'circle', 'square', 'heart', 'snow', 'bubble'] as const).map((shape) => (
+                                <button
+                                  key={shape}
+                                  onClick={() => setMeteorShape(shape)}
+                                  className={`h-8 rounded text-xs font-semibold transition-all ${
+                                    meteorShape === shape
+                                      ? 'bg-slate-800 text-white'
+                                      : 'bg-white text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  {shape === 'dot' ? '点' : shape === 'star' ? '★' : shape === 'circle' ? '◯' : shape === 'square' ? '□' : shape === 'heart' ? '♥' : shape === 'snow' ? '❄' : '◉'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <Button className="w-full text-xs h-8" onClick={() => {
+                            setMeteorFrequency(Math.floor(Math.random() * 900) + 100);
+                            setMeteorSize(Math.floor(Math.random() * 9) + 1);
+                            setMeteorShape(['dot', 'star', 'circle', 'square', 'heart', 'snow', 'bubble'][Math.floor(Math.random() * 7)] as ShapeType);
+                          }}>
+                            ランダムに変更
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {/* 画像 */}
