@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw, Trash2, Cloud, Droplets } from "lucide-react";
+import { Pause, Play, Settings, X } from "lucide-react";
 
 // ポジティブな日本語の言葉のみ
 const POSITIVE_WORDS = [
@@ -43,7 +43,7 @@ const POSITIVE_WORDS = [
   'あなたは天才だ', 'あなたは才能に溢れている', 'あなたは創造性に富んでいる', 'あなたはインスピレーションの源', 'あなたは希望の星', 'あなたは未来の光', 'あなたは愛の使者', 'あなたは平和の象徴', 'あなたは幸せの配達人', 'あなたは喜びの種',
 ];
 
-// グラデーション配色パレット（暗い色を除外、参考サイト追加）
+// グラデーション配色パレット
 const GRADIENT_PALETTES = [
   ['#FF6B6B', '#FFE66D'], ['#4ECDC4', '#44A08D'], ['#F38181', '#FFEAA7'],
   ['#74B9FF', '#A29BFE'], ['#FD79A8', '#FDCB6E'], ['#6C5CE7', '#A29BFE'],
@@ -51,10 +51,9 @@ const GRADIENT_PALETTES = [
   ['#74B9FF', '#81ECEC'], ['#55EFC4', '#FD79A8'], ['#A29BFE', '#74B9FF'],
   ['#FFEAA7', '#FF7675'], ['#DFE6E9', '#B2BEC3'], ['#F8B500', '#FF6348'],
   ['#eecda3', '#ef629f'], ['#FF9A56', '#FF6A88'], ['#FFB347', '#FFAEC9'],
-  // uiGradients, Gradient Hunt, ColorHunt参考
   ['#a1c4fd', '#c2e9fb'], ['#ffecd2', '#fcb69f'], ['#ff9a56', '#ff6a88'],
   ['#ffd89b', '#19547b'], ['#fa709a', '#fee140'], ['#30cfd0', '#330867'],
-  ['#a8edea', '#fed6e3'], ['#ff9a9e', '#fecfef'], ['#ffecd2', '#fcb69f'],
+  ['#a8edea', '#fed6e3'], ['#ff9a9e', '#fecfef'],
 ];
 
 type ShapeType = 'dot' | 'star' | 'circle' | 'square' | 'heart' | 'snow' | 'thumbsup';
@@ -157,11 +156,8 @@ export default function Home() {
   const [isFallingWordsVisible, setIsFallingWordsVisible] = useState(false);
   const [isFallingWordsPaused, setIsFallingWordsPaused] = useState(false);
   const [speed, setSpeed] = useState(15000);
-  const [frequency, setFrequency] = useState(600);
+  const [frequency, setFrequency] = useState(300); // A6: デフォルト出現頻度を半分に
   const [showSettings, setShowSettings] = useState(false);
-  const [wordDirection, setWordDirection] = useState<'down' | 'up'>('down');
-  const [wordOpacity, setWordOpacity] = useState(100);
-  const [randomSpeed, setRandomSpeed] = useState(false);
   
   // 背景設定
   const [bgGradient, setBgGradient] = useState(['#96fbc4', '#f9f586']);
@@ -173,7 +169,7 @@ export default function Home() {
   
   // 深呼吸設定
   const [breathingVisible, setBreathingVisible] = useState(true);
-  const [breathingSpeed, setBreathingSpeed] = useState(10000);
+  const [breathingSpeed, setBreathingSpeed] = useState(16000); // A6: デフォルト深呼吸速度を16秒に
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
@@ -181,7 +177,6 @@ export default function Home() {
   
   // 深呼吸連動言葉表示設定
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
-  const [breathingSyncWordsMode, setBreathingSyncWordsMode] = useState<'breathing' | 'falling'>('breathing');
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
@@ -200,16 +195,6 @@ export default function Home() {
   // 除外ワード設定
   const [excludeWords, setExcludeWords] = useState<string[]>([]);
   const [excludeWordInput, setExcludeWordInput] = useState('');
-  
-  // テンプレート設定
-  const [templates, setTemplates] = useState<{ [key: string]: string[] }>({
-    '朝用': ['おはよう、素敵な一日を', 'やる気が出る', '今日も頑張ろう'],
-    '夜用': ['おやすみ、良い夢を', 'ゆっくり休んでね', '今日もお疲れ様'],
-    'ストレス軽減用': ['深呼吸しよう', 'リラックス', '大丈夫'],
-  });
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [urlInput, setUrlInput] = useState('');
-  const [extractedWords, setExtractedWords] = useState<string[]>([]);
 
   const wordIdRef = useRef(0);
   const starIdRef = useRef(0);
@@ -230,9 +215,7 @@ export default function Home() {
     const fontSize = Math.random() * 20 + 16;
     const colors = ['#FF1493', '#FF69B4', '#FFB6C1', '#FF6347', '#4169E1', '#20B2AA'];
     
-    const wordSpeed = randomSpeed 
-      ? (Math.random() * (30000 - 10000) + 10000) 
-      : speed;
+    const wordSpeed = speed;
     
     // スマホ画面内に収まるように調整（pauseButtonRef基準）
     const screenWidth = window.innerWidth;
@@ -244,7 +227,7 @@ export default function Home() {
     const topMax = Math.min(window.innerHeight * 0.5, pauseButtonY + 100);
     const top = Math.random() * (topMax - topMin) + topMin;
     
-    // x軸：画面内に収まるように調整（-100～1000ではなく画面内）
+    // x軸：画面内に収まるように調整
     const left = Math.random() * Math.max(screenWidth - 100, 100);
     
     return {
@@ -260,7 +243,6 @@ export default function Home() {
 
   // 星を生成
   const generateStar = (): Star => {
-    const colors = ['#ffffff', '#ffff99', '#ffccff'];
     return {
       id: `star-${starIdRef.current++}`,
       x: Math.random() * window.innerWidth,
@@ -273,7 +255,6 @@ export default function Home() {
 
   // 流星を生成
   const generateMeteor = (): Star => {
-    const colors = ['#ffffff', '#ffff99'];
     return {
       id: `meteor-${starIdRef.current++}`,
       x: Math.random() * window.innerWidth,
@@ -300,7 +281,7 @@ export default function Home() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [frequency, isFallingWordsPaused, speed, randomSpeed, isFallingWordsVisible, excludeWords]);
+  }, [frequency, isFallingWordsPaused, speed, isFallingWordsVisible, excludeWords]);
 
   // 星空モード
   useEffect(() => {
@@ -337,22 +318,14 @@ export default function Home() {
 
   // 深呼吸連動言葉の初期化とランダム更新
   useEffect(() => {
-    if (!breathingSyncWordsVisible || breathingSyncWordsMode === 'falling') {
+    if (!breathingSyncWordsVisible) {
       setBreathingSyncWord('');
       return;
     }
 
     const updateBreathingWord = () => {
-      let words = POSITIVE_WORDS;
-      
-      if (selectedTemplate && templates[selectedTemplate]) {
-        words = templates[selectedTemplate];
-      } else if (extractedWords.length > 0) {
-        words = extractedWords;
-      }
-
       if (breathingWordSelectionMode === 'random') {
-        const randomWord = words[Math.floor(Math.random() * words.length)];
+        const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
         setBreathingSyncWord(processWord(randomWord, excludeWords));
       }
     };
@@ -361,7 +334,7 @@ export default function Home() {
     const interval = setInterval(updateBreathingWord, breathingSpeed);
 
     return () => clearInterval(interval);
-  }, [breathingSyncWordsVisible, breathingWordSelectionMode, breathingSpeed, breathingSyncWordsMode, selectedTemplate, extractedWords, excludeWords]);
+  }, [breathingSyncWordsVisible, breathingWordSelectionMode, breathingSpeed, excludeWords]);
 
   // 深呼吸アニメーション
   const [breathingScale, setBreathingScale] = useState(1);
@@ -390,27 +363,6 @@ export default function Home() {
       setBgGradient(palette);
     }
   }, [autoComplementaryMode, guideGradient]);
-
-  // URLからポジティブ言葉を抽出（簡易版）
-  const extractWordsFromUrl = async () => {
-    if (!urlInput) return;
-    
-    try {
-      const response = await fetch(urlInput);
-      const html = await response.text();
-      
-      // 簡易的なテキスト抽出（実際にはより高度な処理が必要）
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      const text = tempDiv.innerText;
-      
-      // ポジティブな言葉を検索
-      const foundWords = POSITIVE_WORDS.filter(word => text.includes(word));
-      setExtractedWords(foundWords.length > 0 ? foundWords : []);
-    } catch (error) {
-      console.error('URL抽出エラー:', error);
-    }
-  };
 
   // 深呼吸ガイドの色をランダムに変更
   const randomizeGuideGradient = () => {
@@ -502,8 +454,8 @@ export default function Home() {
             {words.map((word) => (
               <motion.div
                 key={word.id}
-                initial={{ y: word.top, opacity: wordOpacity / 100 }}
-                animate={{ y: wordDirection === 'down' ? window.innerHeight : -50 }}
+                initial={{ y: word.top, opacity: 1 }}
+                animate={{ y: window.innerHeight }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: word.duration }}
                 className="absolute font-bold"
@@ -574,11 +526,10 @@ export default function Home() {
       {showSettings && (
         <div className="absolute top-16 left-4 w-96 bg-white rounded-lg shadow-2xl p-6 max-h-96 overflow-y-auto z-50">
           <Tabs defaultValue="words" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="words">言葉</TabsTrigger>
               <TabsTrigger value="breathing">呼吸</TabsTrigger>
               <TabsTrigger value="background">背景</TabsTrigger>
-              <TabsTrigger value="template">テンプレート</TabsTrigger>
             </TabsList>
 
             {/* 言葉タブ */}
@@ -589,7 +540,7 @@ export default function Home() {
               </div>
               <div>
                 <Label>出現頻度（ms）</Label>
-                <Slider value={[frequency]} onValueChange={(v) => setFrequency(v[0])} min={200} max={2000} step={100} />
+                <Slider value={[frequency]} onValueChange={(v) => setFrequency(v[0])} min={100} max={1000} step={50} />
               </div>
               <div>
                 <Label>除外ワード</Label>
@@ -715,44 +666,6 @@ export default function Home() {
                     }}
                     className="mt-2 w-full"
                   />
-                )}
-              </div>
-            </TabsContent>
-
-            {/* テンプレートタブ */}
-            <TabsContent value="template" className="space-y-4">
-              <div>
-                <Label>テンプレート選択</Label>
-                <div className="space-y-2">
-                  {Object.keys(templates).map((template) => (
-                    <Button
-                      key={template}
-                      onClick={() => setSelectedTemplate(template)}
-                      variant={selectedTemplate === template ? 'default' : 'outline'}
-                      size="sm"
-                      className="w-full"
-                    >
-                      {template}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Label>URLからポジティブ言葉を抽出</Label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="URLを入力"
-                    className="flex-1 px-2 py-1 border rounded text-sm"
-                  />
-                  <Button onClick={extractWordsFromUrl} size="sm">抽出</Button>
-                </div>
-                {extractedWords.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <p>抽出された言葉: {extractedWords.length}個</p>
-                  </div>
                 )}
               </div>
             </TabsContent>
