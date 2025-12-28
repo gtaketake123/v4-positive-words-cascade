@@ -131,7 +131,7 @@ export default function Home() {
   
   // 深呼吸設定
   const [breathingVisible, setBreathingVisible] = useState(true);
-  const [breathingSpeed, setBreathingSpeed] = useState(16000);
+  const [breathingSpeed, setBreathingSpeed] = useState(18000);
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
@@ -141,18 +141,19 @@ export default function Home() {
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
+  const [wordFallingSpeed, setWordFallingSpeed] = useState(1000);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
   const [breathingSyncWordColor, setBreathingSyncWordColor] = useState<'white' | 'black' | 'gray'>('white');
   
   // 星空・流星群設定
-  const [starfieldFrequency, setStarfieldFrequency] = useState(50);
+  const [starfieldFrequency, setStarfieldFrequency] = useState(100);
   const [starfieldSize, setStarfieldSize] = useState(2);
   const [starfieldShape, setStarfieldShape] = useState<ShapeType>('dot');
-  const [starfieldSpeed, setStarfieldSpeed] = useState(2);
+  const [starfieldSpeed, setStarfieldSpeed] = useState(4);
   const [meteorFrequency, setMeteorFrequency] = useState(400);
-  const [meteorSize, setMeteorSize] = useState(2);
+  const [meteorSize, setMeteorSize] = useState(4);
   const [meteorShape, setMeteorShape] = useState<ShapeType>('dot');
-  const [meteorSpeed, setMeteorSpeed] = useState(2);
+  const [meteorSpeed, setMeteorSpeed] = useState(8);
   
   // 除外ワード設定
   const [excludeWords, setExcludeWords] = useState<string[]>([]);
@@ -253,6 +254,16 @@ export default function Home() {
     }
     
     setStars(Array.from({ length: starfieldFrequency }, () => generateStar()));
+    
+    const starInterval = setInterval(() => {
+      setStars((prev) => {
+        const newStar = generateStar();
+        const newStars = [...prev, newStar];
+        return newStars.length > starfieldFrequency * 2 ? newStars.slice(-starfieldFrequency) : newStars;
+      });
+    }, Math.random() * 1000 + 500);
+    
+    return () => clearInterval(starInterval);
   }, [starfieldVisible, starfieldFrequency, starfieldSize, starfieldShape, starfieldSpeed]);
 
   // 流星群モード
@@ -262,20 +273,17 @@ export default function Home() {
       return;
     }
 
-    // 初期流星を生成
-    setStars(Array.from({ length: 5 }, () => generateMeteor()));
+    setStars(Array.from({ length: 3 }, () => generateMeteor()));
 
-    starIntervalRef.current = setInterval(() => {
+    const meteorInterval = setInterval(() => {
       setStars((prev) => {
         const newMeteor = generateMeteor();
         const newStars = [...prev, newMeteor];
         return newStars.length > 30 ? newStars.slice(-30) : newStars;
       });
-    }, meteorFrequency);
+    }, Math.random() * meteorFrequency + 200);
 
-    return () => {
-      if (starIntervalRef.current) clearInterval(starIntervalRef.current);
-    };
+    return () => clearInterval(meteorInterval);
   }, [meteorShowerVisible, meteorFrequency, meteorSize, meteorShape, meteorSpeed]);
 
   // 深呼吸連動言葉の初期化とランダム更新（深呼吸速度と完全に同期）
@@ -305,12 +313,13 @@ export default function Home() {
   }, [breathingSyncWordsVisible, breathingWordSelectionMode, breathingSpeed, excludeWords]);
 
   // 深呼吸アニメーション
-  const [breathingScale, setBreathingScale] = useState(1);
+  const [breathingScale, setBreathingScale] = useState(0.5);
   useEffect(() => {
+    const startTime = Date.now();
     const interval = setInterval(() => {
-      const elapsed = Date.now() % breathingSpeed;
+      const elapsed = (Date.now() - startTime) % breathingSpeed;
       const progress = elapsed / breathingSpeed;
-      const scale = 0.5 + Math.sin(progress * Math.PI * 2) * 0.5;
+      const scale = 0.5 + Math.sin((progress * Math.PI * 2) - Math.PI / 2) * 0.5;
       setBreathingScale(0.5 + scale * 0.5);
       breathingScaleRef.current = 0.5 + scale * 0.5;
     }, 16);
