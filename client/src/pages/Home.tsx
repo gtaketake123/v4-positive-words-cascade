@@ -71,7 +71,7 @@ export default function Home() {
   const [customBackgroundImage, setCustomBackgroundImage] = useState<string | null>(null);
   
   // 深呼吸設定
-  const [breathingVisible, setBreathingVisible] = useState(false);
+  const [breathingVisible, setBreathingVisible] = useState(true);
   const [breathingSpeed, setBreathingSpeed] = useState(10000);
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
@@ -79,8 +79,8 @@ export default function Home() {
   const [breathingColor, setBreathingColor] = useState('#FF69B4');
   
   // 深呼吸連動言葉表示設定
-  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(false);
-  const [breathingSyncWordsMode, setBreathingSyncWordsMode] = useState<'breathing' | 'falling'>('falling');
+  const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
+  const [breathingSyncWordsMode, setBreathingSyncWordsMode] = useState<'breathing' | 'falling'>('breathing');
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingSyncWordColor, setBreathingSyncWordColor] = useState('#FF69B4');
@@ -186,6 +186,10 @@ export default function Home() {
                 opacity: wordOpacity / 100,
                 textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 zIndex: 5,
+                maxWidth: '80vw',
+                wordWrap: 'break-word',
+                whiteSpace: 'normal',
+                lineHeight: '1.2',
               }}
               initial={wordDirection === 'down' ? { y: 0, opacity: 1 } : { y: 0, opacity: 1 }}
               animate={wordDirection === 'down' ? { y: '110vh', opacity: 0 } : { y: -window.innerHeight - 100, opacity: 0 }}
@@ -315,17 +319,31 @@ export default function Home() {
                       {breathingSyncWordsVisible && (
                         <>
                           <div className="space-y-4 mb-4">
-                            <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
-                            <Select value={breathingSyncWordsMode} onValueChange={(val: any) => setBreathingSyncWordsMode(val)}>
-                              <SelectTrigger className="w-full h-12 rounded-xl bg-white">
-                                <SelectValue placeholder="モードを選択" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="falling">言葉が降る</SelectItem>
-                                <SelectItem value="breathing">深呼吸と連動</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                       <div className="space-y-4">
+                      <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => setBreathingSyncWordsMode('falling')}
+                          className={`h-12 rounded-xl font-semibold transition-all ${
+                            breathingSyncWordsMode === 'falling'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-slate-700 border border-slate-200'
+                          }`}
+                        >
+                          言葉が降る
+                        </button>
+                        <button
+                          onClick={() => setBreathingSyncWordsMode('breathing')}
+                          className={`h-12 rounded-xl font-semibold transition-all ${
+                            breathingSyncWordsMode === 'breathing'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-slate-700 border border-slate-200'
+                          }`}
+                        >
+                          深呼吸と連動
+                        </button>
+                      </div>
+                    </div>         </div>
 
                           {breathingSyncWordsMode === 'breathing' && (
                             <>
