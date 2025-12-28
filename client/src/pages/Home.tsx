@@ -1,15 +1,14 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Pause, Play, Settings, X, ArrowDown, ArrowUp, Upload } from "lucide-react";
+import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
 
-// ポジティブな日本語の言葉のみ（大幅に拡充）
+// ポジティブな日本語の言葉のみ
 const POSITIVE_WORDS = [
   'あなたは素晴らしい', '今この瞬間を楽しもう', '幸運が訪れる', 'できる', 'ありがとう', '大丈夫', 'やれば出来る', '笑顔で過ごそう', '前向きに', 'チャレンジしよう',
   '成功する', '愛される', '幸せ', '感謝', '希望', '心が安らぐ', 'リラックス', '落ち着こう', 'やる気が出る', '元気が出る',
@@ -29,8 +28,6 @@ const POSITIVE_WORDS = [
   '人間味があるね', '手際がいいね', '豪快だね', 'ひとりできたんだね', '今日も元気いっぱいだね', 'お友だちに優しいところが素敵だね', 'お手伝いしてくれて助かったよ、ありがとう', 'ママ（パパ）は◯◯ちゃんのことが正しいと思うよ', 'チャレンジしたことがすごいんだよ', 'よく気づくことができたね',
   'ママ（パパ）はどんなことがあっても◯◯ちゃんを応援するからね', '◯◯ちゃんがいるだけで幸せだよ', 'やればできるんだね', 'さすがだね', '最後までやり遂げたことがすごいことだよ', '諦めない姿が素敵だよ', 'みんなを元気にしてくれるね', '自分の意見を言えるのはすごいね', '努力しているのは知っているよ', 'すっかり大人になったね',
   '思い切ってやってごらん', 'がんばっているのは知っているからね', '本当に助かっているよ', 'よく気づいてくれるよね', 'がんばりすぎないことも大切だよ', '自分も◯◯さんみたいになりたいです', '本当になんでも知っていますよね',
-  '人はしばしば不合理で、非論理的で、自己中心的です。それでも許しなさい。', '人にやさしくすると、人はあなたに何か隠された動機があるはずだ、と非難するかもしれません。それでも人にやさしくしなさい。', '成功をすると、不実な友と、本当の敵を得てしまうことでしょう。それでも成功しなさい。', '正直で誠実であれば、人はあなたをだますかもしれません。それでも正直に誠実でいなさい。', '歳月を費やして作り上げたものが、一晩で壊されてしまうことになるかもしれません。それでも作り続けなさい。', '心を穏やかにし幸福を見つけると、妬まれるかもしれません。それでも幸福でいなさい。', '今日善い行いをしても、次の日には忘れられるでしょう。それでも善を行いを続けなさい。', '持っている一番いいものを分け与えても、決して十分ではないでしょう。それでも一番いいものを分け与えなさい。',
-  '束縛があるからこそ、私は飛べるのだ。悲しみがあるからこそ、私は高く舞い上がれるのだ。逆境があるからこそ、私は走れるのだ。涙があるからこそ、私は前に進めるのだ。',
   '自分を責めないで', '大丈夫、あなたは一人じゃない', 'ゆっくり休んでね', 'あなたのペースでいいよ', '無理しないでね', 'いつもありがとう', '感謝しています', 'あなたの存在が宝物', 'あなたは愛されている', 'あなたは大切な人',
   'あなたの笑顔が世界を救う', 'あなたは光だ', 'あなたは希望だ', 'あなたは奇跡だ', 'あなたは美しい', 'あなたは強い', 'あなたは優しい', 'あなたは賢い', 'あなたは正しい', 'あなたは自由だ',
   'あなたの未来は明るい', 'あなたの可能性は無限大', 'あなたの夢は叶う', 'あなたの願いは届く', 'あなたの心は清らか', 'あなたの魂は輝いている', 'あなたの人生は素晴らしい', 'あなたの選択は間違っていない', 'あなたの決断を信じる', 'あなたの直感を大切に',
@@ -56,6 +53,31 @@ interface FallingWord {
   color: string;
 }
 
+// 色の補色を計算するヘルパー関数
+const getComplementaryColor = (hex: string) => {
+  if (!hex.startsWith('#')) return hex;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const compR = (255 - r).toString(16).padStart(2, '0');
+  const compG = (255 - g).toString(16).padStart(2, '0');
+  const compB = (255 - b).toString(16).padStart(2, '0');
+  return `#${compR}${compG}${compB}`;
+};
+
+// ランダムなグラデーションペアを生成
+const generateRandomGradients = () => {
+  const randomHex = () => Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+  const color1 = `#${randomHex()}`;
+  const color2 = `#${randomHex()}`;
+  const bg1 = getComplementaryColor(color1);
+  const bg2 = getComplementaryColor(color2);
+  return {
+    guide: [color1, color2],
+    bg: [bg1, bg2]
+  };
+};
+
 export default function Home() {
   const [words, setWords] = useState<FallingWord[]>([]);
   const [isPaused, setIsPaused] = useState(false);
@@ -67,8 +89,7 @@ export default function Home() {
   const [randomSpeed, setRandomSpeed] = useState(false);
   
   // 背景設定
-  const [backgroundMode, setBackgroundMode] = useState<'gradient-auto' | 'gradient-fixed' | 'white' | 'black' | 'image'>('gradient-auto');
-  const [customBackgroundImage, setCustomBackgroundImage] = useState<string | null>(null);
+  const [bgGradient, setBgGradient] = useState(['#96fbc4', '#f9f586']);
   
   // 深呼吸設定
   const [breathingVisible, setBreathingVisible] = useState(true);
@@ -76,22 +97,23 @@ export default function Home() {
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
-  const [breathingColor, setBreathingColor] = useState('#FF69B4');
+  const [guideGradient, setGuideGradient] = useState(['#ffc3a0', '#ffafbd']);
   
   // 深呼吸連動言葉表示設定
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
   const [breathingSyncWordsMode, setBreathingSyncWordsMode] = useState<'breathing' | 'falling'>('breathing');
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
-  const [breathingSyncWordColor, setBreathingSyncWordColor] = useState('#FF69B4');
+  const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
 
   const wordIdRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 言葉を生成
   const generateWord = (): FallingWord => {
-    const text = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+    let text = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+    if (text.length > 20) text = text.substring(0, 20);
+    
     const fontSize = Math.random() * 20 + 16;
     const colors = ['#FF1493', '#FF69B4', '#FFB6C1', '#FF6347', '#4169E1', '#20B2AA'];
     
@@ -99,14 +121,17 @@ export default function Home() {
       ? (Math.random() * (30000 - 10000) + 10000) 
       : speed;
     
-    const windowHeight = window.innerHeight;
-    const randomTop = Math.random() * (windowHeight / 2) - 100;
+    // スマホ画面（幅が狭い場合）を考慮した出現位置の調整
+    // 右側から出現する際は少なくとも10文字分（約150px〜200px）の余白を確保
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const padding = isMobile ? 30 : 10; // %単位
+    const left = Math.random() * (100 - padding * 2) + padding;
     
     return {
       id: `word-${wordIdRef.current++}`,
       text,
-      left: Math.random() * 90 + 5,
-      top: randomTop,
+      left,
+      top: -50,
       duration: wordSpeed / 1000,
       fontSize,
       color: colors[Math.floor(Math.random() * colors.length)],
@@ -129,47 +154,44 @@ export default function Home() {
     };
   }, [frequency, isPaused, speed, randomSpeed, breathingSyncWordsMode]);
 
-  // 深呼吸連動言葉の初期化
+  // 深呼吸連動言葉の初期化とランダム更新
   useEffect(() => {
     if (breathingSyncWordsVisible && breathingSyncWordsMode === 'breathing') {
-      const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
-      setBreathingSyncWord(randomWord);
+      if (breathingWordSelectionMode === 'random') {
+        const updateWord = () => {
+          const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+          setBreathingSyncWord(randomWord);
+        };
+        updateWord();
+        const interval = setInterval(updateWord, breathingSpeed);
+        return () => clearInterval(interval);
+      } else if (!breathingSyncWord) {
+        setBreathingSyncWord(POSITIVE_WORDS[0]);
+      }
     }
-  }, [breathingSyncWordsVisible, breathingSyncWordsMode]);
+  }, [breathingSyncWordsVisible, breathingSyncWordsMode, breathingWordSelectionMode, breathingSpeed]);
 
   const removeWord = (id: string) => {
     setWords((prev) => prev.filter((w) => w.id !== id));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setCustomBackgroundImage(event.target?.result as string);
-        setBackgroundMode('image');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // 深呼吸ガイドの反対色を計算（文字色用）
+  const breathingSyncWordColor = useMemo(() => {
+    return getComplementaryColor(guideGradient[0]);
+  }, [guideGradient]);
 
-  const getBackgroundStyle = () => {
-    if (backgroundMode === 'white') return { backgroundColor: '#FFFFFF' };
-    if (backgroundMode === 'black') return { backgroundColor: '#000000' };
-    if (backgroundMode === 'image' && customBackgroundImage) {
-      return {
-        backgroundImage: `url(${customBackgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
-    return {};
+  const handleRandomizeColors = () => {
+    const { guide, bg } = generateRandomGradients();
+    setGuideGradient(guide);
+    setBgGradient(bg);
   };
 
   return (
     <div 
-      className={`relative w-full h-screen overflow-hidden transition-all duration-1000 ${backgroundMode === 'gradient-auto' ? 'animate-gradient-bg' : ''}`}
-      style={getBackgroundStyle()}
+      className="relative w-full h-screen overflow-hidden transition-all duration-1000"
+      style={{
+        background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
+      }}
     >
       {/* 降ってくる言葉 */}
       {breathingSyncWordsMode === 'falling' && (
@@ -180,19 +202,14 @@ export default function Home() {
               className="absolute whitespace-nowrap font-semibold select-none pointer-events-none"
               style={{
                 left: `${word.left}%`,
-                top: `${word.top}px`,
                 fontSize: `${word.fontSize}px`,
                 color: word.color,
                 opacity: wordOpacity / 100,
                 textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 zIndex: 5,
-                maxWidth: '80vw',
-                wordWrap: 'break-word',
-                whiteSpace: 'normal',
-                lineHeight: '1.2',
               }}
-              initial={wordDirection === 'down' ? { y: 0, opacity: 1 } : { y: 0, opacity: 1 }}
-              animate={wordDirection === 'down' ? { y: '110vh', opacity: 0 } : { y: -window.innerHeight - 100, opacity: 0 }}
+              initial={{ y: wordDirection === 'down' ? -50 : '110vh' }}
+              animate={{ y: wordDirection === 'down' ? '110vh' : -100 }}
               transition={{ duration: word.duration, ease: 'linear' }}
               onAnimationComplete={() => removeWord(word.id)}
             >
@@ -202,14 +219,13 @@ export default function Home() {
         </AnimatePresence>
       )}
 
-      {/* 深呼吸ガイド */}
+      {/* 深呼吸ガイドと言葉の連動 */}
       {breathingVisible && (
         <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
           <motion.div
-            key={`breathing-${breathingSpeed}-${breathingMinSize}-${breathingMaxSize}`}
-            className="rounded-full shadow-lg"
+            className="rounded-full shadow-lg flex items-center justify-center overflow-hidden"
             style={{
-              backgroundColor: breathingColor,
+              background: `linear-gradient(135deg, ${guideGradient[0]}, ${guideGradient[1]})`,
               opacity: breathingOpacity / 100,
             }}
             animate={{ 
@@ -221,37 +237,34 @@ export default function Home() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-          />
-        </div>
-      )}
-
-      {/* 深呼吸連動言葉表示 */}
-      {breathingSyncWordsVisible && breathingSyncWordsMode === 'breathing' && breathingVisible && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-20">
-          <motion.div
-            key={`breathing-word-${breathingSpeed}`}
-            className="absolute whitespace-nowrap font-semibold select-none text-center px-4"
-            style={{
-              color: breathingSyncWordColor,
-              textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}
-            animate={{ 
-              fontSize: [breathingSyncWordSize * 0.6, breathingSyncWordSize, breathingSyncWordSize * 0.6],
-              opacity: [0.5, 1, 0.5],
-            }}
-            transition={{ 
-              duration: breathingSpeed / 1000, 
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
           >
-            {breathingSyncWord}
+            {breathingSyncWordsVisible && breathingSyncWordsMode === 'breathing' && (
+              <motion.div
+                className="whitespace-nowrap font-bold select-none text-center px-4"
+                style={{
+                  color: breathingSyncWordColor,
+                  fontSize: `${breathingSyncWordSize}px`,
+                  textShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}
+                animate={{ 
+                  scale: [breathingMinSize / breathingMaxSize, 1, breathingMinSize / breathingMaxSize],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{ 
+                  duration: breathingSpeed / 1000, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                {breathingSyncWord}
+              </motion.div>
+            )}
           </motion.div>
         </div>
       )}
 
       {/* コントロールボタン */}
-      <div className="fixed top-6 left-6 z-50">
+      <div className="fixed top-6 left-6 z-50 flex gap-2">
         <Button
           variant="secondary"
           size="icon"
@@ -259,6 +272,15 @@ export default function Home() {
           onClick={() => setIsPaused(!isPaused)}
         >
           {isPaused ? <Play size={20} /> : <Pause size={20} />}
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="w-12 h-12 rounded-xl shadow-md bg-white/90 hover:bg-white text-slate-900"
+          onClick={handleRandomizeColors}
+          title="色をランダムに変更"
+        >
+          <RefreshCw size={20} />
         </Button>
       </div>
 
@@ -300,14 +322,13 @@ export default function Home() {
 
               <Tabs defaultValue="words" className="flex-1 flex flex-col overflow-hidden">
                 <TabsList className="grid grid-cols-3 w-full bg-white border-b rounded-none h-14">
-                  <TabsTrigger value="words" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">文字</TabsTrigger>
-                  <TabsTrigger value="background" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">背景</TabsTrigger>
-                  <TabsTrigger value="breathing" className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none text-xs">深呼吸</TabsTrigger>
+                  <TabsTrigger value="words" className="rounded-none text-xs">文字</TabsTrigger>
+                  <TabsTrigger value="background" className="rounded-none text-xs">背景</TabsTrigger>
+                  <TabsTrigger value="breathing" className="rounded-none text-xs">深呼吸</TabsTrigger>
                 </TabsList>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
                   <TabsContent value="words" className="space-y-8 mt-0">
-                    {/* 深呼吸連動言葉表示設定 - 文字タブの上部に統合 */}
                     <div className="border-b pb-8">
                       <h3 className="text-sm font-bold text-slate-900 mb-4">深呼吸連動設定</h3>
                       
@@ -317,59 +338,58 @@ export default function Home() {
                       </div>
 
                       {breathingSyncWordsVisible && (
-                        <>
-                          <div className="space-y-4 mb-4">
-                       <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => setBreathingSyncWordsMode('falling')}
-                          className={`h-12 rounded-xl font-semibold transition-all ${
-                            breathingSyncWordsMode === 'falling'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-slate-700 border border-slate-200'
-                          }`}
-                        >
-                          言葉が降る
-                        </button>
-                        <button
-                          onClick={() => setBreathingSyncWordsMode('breathing')}
-                          className={`h-12 rounded-xl font-semibold transition-all ${
-                            breathingSyncWordsMode === 'breathing'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-slate-700 border border-slate-200'
-                          }`}
-                        >
-                          深呼吸と連動
-                        </button>
-                      </div>
-                    </div>         </div>
+                        <div className="space-y-6">
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <button
+                                onClick={() => setBreathingSyncWordsMode('falling')}
+                                className={`h-12 rounded-xl font-semibold transition-all ${
+                                  breathingSyncWordsMode === 'falling'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-slate-700 border border-slate-200'
+                                }`}
+                              >
+                                言葉を降る
+                              </button>
+                              <button
+                                onClick={() => setBreathingSyncWordsMode('breathing')}
+                                className={`h-12 rounded-xl font-semibold transition-all ${
+                                  breathingSyncWordsMode === 'breathing'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-slate-700 border border-slate-200'
+                                }`}
+                              >
+                                深呼吸と連動
+                              </button>
+                            </div>
+                          </div>
 
                           {breathingSyncWordsMode === 'breathing' && (
                             <>
-                              <div className="space-y-4 mb-4">
-                                <Label className="text-sm font-semibold text-slate-700">文字サイズ ({breathingSyncWordSize}px)</Label>
-                                <Slider 
-                                  value={[breathingSyncWordSize]} 
-                                  min={16} 
-                                  max={64} 
-                                  step={2} 
-                                  onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
-                                />
-                              </div>
-
-                              <div className="space-y-4 mb-4">
-                                <Label className="text-sm font-semibold text-slate-700">色</Label>
-                                <div className="flex gap-3">
-                                  <input 
-                                    type="color" 
-                                    value={breathingSyncWordColor} 
-                                    onChange={(e) => setBreathingSyncWordColor(e.target.value)}
-                                    className="w-12 h-12 rounded-xl cursor-pointer border-none"
-                                  />
-                                  <div className="flex-1 flex items-center px-4 bg-white border rounded-xl text-sm text-slate-600">
-                                    {breathingSyncWordColor.toUpperCase()}
-                                  </div>
+                              <div className="space-y-4">
+                                <Label className="text-sm font-semibold text-slate-700">モード切り替え</Label>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <button
+                                    onClick={() => setBreathingWordSelectionMode('random')}
+                                    className={`h-10 rounded-lg text-sm font-semibold transition-all ${
+                                      breathingWordSelectionMode === 'random'
+                                        ? 'bg-slate-800 text-white'
+                                        : 'bg-white text-slate-700 border border-slate-200'
+                                    }`}
+                                  >
+                                    ランダム
+                                  </button>
+                                  <button
+                                    onClick={() => setBreathingWordSelectionMode('fixed')}
+                                    className={`h-10 rounded-lg text-sm font-semibold transition-all ${
+                                      breathingWordSelectionMode === 'fixed'
+                                        ? 'bg-slate-800 text-white'
+                                        : 'bg-white text-slate-700 border border-slate-200'
+                                    }`}
+                                  >
+                                    言葉を固定
+                                  </button>
                                 </div>
                               </div>
 
@@ -388,13 +408,23 @@ export default function Home() {
                                   言葉を変更
                                 </Button>
                               </div>
+
+                              <div className="space-y-4">
+                                <Label className="text-sm font-semibold text-slate-700">文字サイズ ({breathingSyncWordSize}px)</Label>
+                                <Slider 
+                                  value={[breathingSyncWordSize]} 
+                                  min={16} 
+                                  max={64} 
+                                  step={2} 
+                                  onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
+                                />
+                              </div>
                             </>
                           )}
-                        </>
+                        </div>
                       )}
                     </div>
 
-                    {/* 従来の文字設定 */}
                     <div className="space-y-4">
                       <Label className="text-sm font-semibold text-slate-700">速度 ({(speed / 1000).toFixed(1)}秒)</Label>
                       <Slider 
@@ -455,40 +485,25 @@ export default function Home() {
 
                   <TabsContent value="background" className="space-y-8 mt-0">
                     <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">背景モード</Label>
-                      <Select value={backgroundMode} onValueChange={(val: any) => setBackgroundMode(val)}>
-                        <SelectTrigger className="w-full h-12 rounded-xl bg-white">
-                          <SelectValue placeholder="モードを選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gradient-auto">グラデーション（アニメーション）</SelectItem>
-                          <SelectItem value="gradient-fixed">グラデーション（固定）</SelectItem>
-                          <SelectItem value="white">白単色</SelectItem>
-                          <SelectItem value="black">黒単色</SelectItem>
-                          <SelectItem value="image">カスタム画像</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {backgroundMode === 'image' && (
-                      <div className="space-y-4">
-                        <Label className="text-sm font-semibold text-slate-700">画像をアップロード</Label>
-                        <div 
-                          className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-white cursor-pointer hover:border-blue-400 transition-colors"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Upload className="text-slate-400" size={32} />
-                          <span className="text-sm text-slate-500">クリックして画像を選択</span>
-                          <input 
-                            ref={fileInputRef} 
-                            type="file" 
-                            className="hidden" 
-                            accept="image/*" 
-                            onChange={handleImageUpload} 
-                          />
-                        </div>
+                      <Label className="text-sm font-bold text-slate-900">背景グラデーション</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input 
+                          type="color" 
+                          value={bgGradient[0]} 
+                          onChange={(e) => setBgGradient([e.target.value, bgGradient[1]])}
+                          className="w-full h-12 rounded-xl cursor-pointer"
+                        />
+                        <input 
+                          type="color" 
+                          value={bgGradient[1]} 
+                          onChange={(e) => setBgGradient([bgGradient[0], e.target.value])}
+                          className="w-full h-12 rounded-xl cursor-pointer"
+                        />
                       </div>
-                    )}
+                      <Button className="w-full" onClick={handleRandomizeColors}>
+                        補色ペアをランダム生成
+                      </Button>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="breathing" className="space-y-8 mt-0">
@@ -543,17 +558,20 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-4">
-                          <Label className="text-sm font-semibold text-slate-700">色</Label>
-                          <div className="flex gap-3">
+                          <Label className="text-sm font-semibold text-slate-700">ガイド色グラデーション</Label>
+                          <div className="grid grid-cols-2 gap-3">
                             <input 
                               type="color" 
-                              value={breathingColor} 
-                              onChange={(e) => setBreathingColor(e.target.value)}
-                              className="w-12 h-12 rounded-xl cursor-pointer border-none"
+                              value={guideGradient[0]} 
+                              onChange={(e) => setGuideGradient([e.target.value, guideGradient[1]])}
+                              className="w-full h-12 rounded-xl cursor-pointer"
                             />
-                            <div className="flex-1 flex items-center px-4 bg-white border rounded-xl text-sm text-slate-600">
-                              {breathingColor.toUpperCase()}
-                            </div>
+                            <input 
+                              type="color" 
+                              value={guideGradient[1]} 
+                              onChange={(e) => setGuideGradient([guideGradient[0], e.target.value])}
+                              className="w-full h-12 rounded-xl cursor-pointer"
+                            />
                           </div>
                         </div>
                       </>
