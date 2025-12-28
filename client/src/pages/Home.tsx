@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
+import { Pause, Play, Settings, X, ArrowDown, ArrowUp, RefreshCw, Trash2 } from "lucide-react";
 
 // ポジティブな日本語の言葉のみ
 const POSITIVE_WORDS = [
@@ -25,9 +25,9 @@ const POSITIVE_WORDS = [
   'おはよう、素敵な一日を', 'おやすみ、良い夢を', '今日もお疲れ様', 'よく頑張ったね', 'えらいね', 'すごいね', 'さすがだね', '素晴らしい', '最高', '完璧',
   'あなたがいると場が和む', '一緒にいるとポジティブになれる', '癒されるよ', '笑顔が素敵だね', '気が利くよね', '気配りが上手だね', 'キラキラしているね', '行動力があるね', '誰からも好かれるタイプだよね', 'ファッションセンスがいいよね', '勇気があるね',
   '前向きで励みになる', '意見が的確だよね', '集中力があるよね', '話し上手だよね', '聞き上手だよね', '信頼しているよ', '頼りになるよ', '器が大きいね', '存在感があるね', 'センスがあるね',
-  '人間味があるね', '手際がいいね', '豪快だね', 'ひとりできたんだね', '今日も元気いっぱいだね', 'お友だちに優しいところが素敵だね', 'お手伝いしてくれて助かったよ、ありがとう', 'ママ（パパ）は◯◯ちゃんのことが正しいと思うよ', 'チャレンジしたことがすごいんだよ', 'よく気づくことができたね',
-  'ママ（パパ）はどんなことがあっても◯◯ちゃんを応援するからね', '◯◯ちゃんがいるだけで幸せだよ', 'やればできるんだね', 'さすがだね', '最後までやり遂げたことがすごいことだよ', '諦めない姿が素敵だよ', 'みんなを元気にしてくれるね', '自分の意見を言えるのはすごいね', '努力しているのは知っているよ', 'すっかり大人になったね',
-  '思い切ってやってごらん', 'がんばっているのは知っているからね', '本当に助かっているよ', 'よく気づいてくれるよね', 'がんばりすぎないことも大切だよ', '自分も◯◯さんみたいになりたいです', '本当になんでも知っていますよね',
+  '人間味があるね', '手際がいいね', '豪快だね', 'ひとりできたんだね', '今日も元気いっぱいだね', 'お友だちに優しいところが素敵だね', 'お手伝いしてくれて助かったよ、ありがとう', 'ママ（パパ）はあなたのことが正しいと思うよ', 'チャレンジしたことがすごいんだよ', 'よく気づくことができたね',
+  'ママ（パパ）はどんなことがあってもあなたを応援するからね', 'あなたがいるだけで幸せだよ', 'やればできるんだね', 'さすがだね', '最後までやり遂げたことがすごいことだよ', '諦めない姿が素敵だよ', 'みんなを元気にしてくれるね', '自分の意見を言えるのはすごいね', '努力しているのは知っているよ', 'すっかり大人になったね',
+  '思い切ってやってごらん', 'がんばっているのは知っているからね', '本当に助かっているよ', 'よく気づいてくれるよね', 'がんばりすぎないことも大切だよ', '自分もあなたみたいになりたいです', '本当になんでも知っていますよね',
   '自分を責めないで', '大丈夫、あなたは一人じゃない', 'ゆっくり休んでね', 'あなたのペースでいいよ', '無理しないでね', 'いつもありがとう', '感謝しています', 'あなたの存在が宝物', 'あなたは愛されている', 'あなたは大切な人',
   'あなたの笑顔が世界を救う', 'あなたは光だ', 'あなたは希望だ', 'あなたは奇跡だ', 'あなたは美しい', 'あなたは強い', 'あなたは優しい', 'あなたは賢い', 'あなたは正しい', 'あなたは自由だ',
   'あなたの未来は明るい', 'あなたの可能性は無限大', 'あなたの夢は叶う', 'あなたの願いは届く', 'あなたの心は清らか', 'あなたの魂は輝いている', 'あなたの人生は素晴らしい', 'あなたの選択は間違っていない', 'あなたの決断を信じる', 'あなたの直感を大切に',
@@ -43,6 +43,16 @@ const POSITIVE_WORDS = [
   'あなたは天才だ', 'あなたは才能に溢れている', 'あなたは創造性に富んでいる', 'あなたはインスピレーションの源', 'あなたは希望の星', 'あなたは未来の光', 'あなたは愛の使者', 'あなたは平和の象徴', 'あなたは幸せの配達人', 'あなたは喜びの種',
 ];
 
+// グラデーション配色パレット（暗い色を除外）
+const GRADIENT_PALETTES = [
+  ['#FF6B6B', '#FFE66D'], ['#4ECDC4', '#44A08D'], ['#F38181', '#FFEAA7'],
+  ['#74B9FF', '#A29BFE'], ['#FD79A8', '#FDCB6E'], ['#6C5CE7', '#A29BFE'],
+  ['#00B894', '#55EFC4'], ['#FF7675', '#FFECB3'], ['#FD79A8', '#FF7675'],
+  ['#74B9FF', '#81ECEC'], ['#55EFC4', '#FD79A8'], ['#A29BFE', '#74B9FF'],
+  ['#FFEAA7', '#FF7675'], ['#DFE6E9', '#B2BEC3'], ['#F8B500', '#FF6348'],
+  ['#eecda3', '#ef629f'], ['#FF9A56', '#FF6A88'], ['#FFB347', '#FFAEC9'],
+];
+
 interface FallingWord {
   id: string;
   text: string;
@@ -52,6 +62,31 @@ interface FallingWord {
   fontSize: number;
   color: string;
 }
+
+interface Star {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+}
+
+// 言葉を処理する関数
+const processWord = (word: string, excludeWords: string[]): string => {
+  let processed = word;
+  
+  // 匿名の名前を「あなた」に変換
+  processed = processed.replace(/([◯○])([^◯○]*?)([ちゃんくん])/g, 'あなた');
+  
+  // 除外ワードをチェック
+  for (const excludeWord of excludeWords) {
+    if (excludeWord && processed.includes(excludeWord)) {
+      return '';
+    }
+  }
+  
+  return processed;
+};
 
 // 色の補色を計算するヘルパー関数
 const getComplementaryColor = (hex: string) => {
@@ -66,30 +101,29 @@ const getComplementaryColor = (hex: string) => {
 };
 
 // ランダムなグラデーションペアを生成
-const generateRandomGradients = () => {
-  const randomHex = () => Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-  const color1 = `#${randomHex()}`;
-  const color2 = `#${randomHex()}`;
-  const bg1 = getComplementaryColor(color1);
-  const bg2 = getComplementaryColor(color2);
-  return {
-    guide: [color1, color2],
-    bg: [bg1, bg2]
-  };
+const generateRandomGradient = () => {
+  const palette = GRADIENT_PALETTES[Math.floor(Math.random() * GRADIENT_PALETTES.length)];
+  return palette;
 };
 
 export default function Home() {
   const [words, setWords] = useState<FallingWord[]>([]);
-  const [isPaused, setIsPaused] = useState(false);
+  const [stars, setStars] = useState<Star[]>([]);
+  const [isFallingWordsPaused, setIsFallingWordsPaused] = useState(false);
   const [speed, setSpeed] = useState(15000);
   const [frequency, setFrequency] = useState(600);
   const [showSettings, setShowSettings] = useState(false);
   const [wordDirection, setWordDirection] = useState<'down' | 'up'>('down');
   const [wordOpacity, setWordOpacity] = useState(100);
   const [randomSpeed, setRandomSpeed] = useState(false);
+  const [fallingWordsVisible, setFallingWordsVisible] = useState(true);
   
   // 背景設定
   const [bgGradient, setBgGradient] = useState(['#96fbc4', '#f9f586']);
+  const [starfieldVisible, setStarfieldVisible] = useState(false);
+  const [meteorShowerVisible, setMeteorShowerVisible] = useState(false);
+  const [customBackgroundImage, setCustomBackgroundImage] = useState<string | null>(null);
+  const [imageBackgroundVisible, setImageBackgroundVisible] = useState(false);
   
   // 深呼吸設定
   const [breathingVisible, setBreathingVisible] = useState(true);
@@ -97,7 +131,7 @@ export default function Home() {
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
-  const [guideGradient, setGuideGradient] = useState(['#ffc3a0', '#ffafbd']);
+  const [guideGradient, setGuideGradient] = useState(['#eecda3', '#ef629f']);
   
   // 深呼吸連動言葉表示設定
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
@@ -105,13 +139,24 @@ export default function Home() {
   const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
+  
+  // 除外ワード設定
+  const [excludeWords, setExcludeWords] = useState<string[]>([]);
+  const [excludeWordInput, setExcludeWordInput] = useState('');
 
   const wordIdRef = useRef(0);
+  const starIdRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const starIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pauseButtonRef = useRef<HTMLButtonElement>(null);
 
   // 言葉を生成
-  const generateWord = (): FallingWord => {
+  const generateWord = (): FallingWord | null => {
     let text = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+    text = processWord(text, excludeWords);
+    
+    if (!text) return null;
+    
     if (text.length > 20) text = text.substring(0, 20);
     
     const fontSize = Math.random() * 20 + 16;
@@ -121,30 +166,61 @@ export default function Home() {
       ? (Math.random() * (30000 - 10000) + 10000) 
       : speed;
     
-    // スマホ画面（幅が狭い場合）を考慮した出現位置の調整
-    // 右側から出現する際は少なくとも10文字分（約150px〜200px）の余白を確保
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const padding = isMobile ? 30 : 10; // %単位
-    const left = Math.random() * (100 - padding * 2) + padding;
+    // 停止ボタンの位置を基準に計算
+    const pauseButtonRect = pauseButtonRef.current?.getBoundingClientRect();
+    const pauseY = pauseButtonRect?.top ?? 50;
+    const pauseX = pauseButtonRect?.left ?? 50;
+    
+    // y軸：停止ボタンから上下100の範囲
+    const topRange = Math.random() * 200 - 100; // -100 to 100
+    const top = pauseY + topRange;
+    
+    // x軸：停止ボタンから左右-100～1000の範囲
+    const leftRange = Math.random() * 1100 - 100; // -100 to 1000
+    const left = pauseX + leftRange;
     
     return {
       id: `word-${wordIdRef.current++}`,
       text,
-      left,
-      top: -50,
+      left: Math.max(0, Math.min(left, window.innerWidth - 100)),
+      top: Math.max(0, top),
       duration: wordSpeed / 1000,
       fontSize,
       color: colors[Math.floor(Math.random() * colors.length)],
     };
   };
 
+  // 星を生成
+  const generateStar = (): Star => {
+    return {
+      id: `star-${starIdRef.current++}`,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      size: Math.random() * 3 + 1,
+      duration: Math.random() * 3 + 2,
+    };
+  };
+
+  // 流星を生成
+  const generateMeteor = (): Star => {
+    return {
+      id: `meteor-${starIdRef.current++}`,
+      x: Math.random() * window.innerWidth,
+      y: -50,
+      size: Math.random() * 2 + 0.5,
+      duration: Math.random() * 2 + 1,
+    };
+  };
+
   // 言葉を追加するループ
   useEffect(() => {
-    if (isPaused || breathingSyncWordsMode === 'breathing') return;
+    if (isFallingWordsPaused || !fallingWordsVisible || breathingSyncWordsMode === 'breathing') return;
 
     intervalRef.current = setInterval(() => {
       setWords((prev) => {
-        const newWords = [...prev, generateWord()];
+        const newWord = generateWord();
+        if (!newWord) return prev;
+        const newWords = [...prev, newWord];
         return newWords.length > 60 ? newWords.slice(-60) : newWords;
       });
     }, frequency);
@@ -152,15 +228,40 @@ export default function Home() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [frequency, isPaused, speed, randomSpeed, breathingSyncWordsMode]);
+  }, [frequency, isFallingWordsPaused, speed, randomSpeed, breathingSyncWordsMode, fallingWordsVisible, excludeWords]);
+
+  // 星空モード
+  useEffect(() => {
+    if (!starfieldVisible) return;
+    
+    setStars(Array.from({ length: 50 }, () => generateStar()));
+  }, [starfieldVisible]);
+
+  // 流星群モード
+  useEffect(() => {
+    if (!meteorShowerVisible) return;
+
+    starIntervalRef.current = setInterval(() => {
+      setStars((prev) => {
+        const newMeteor = generateMeteor();
+        const newStars = [...prev, newMeteor];
+        return newStars.length > 30 ? newStars.slice(-30) : newStars;
+      });
+    }, 800);
+
+    return () => {
+      if (starIntervalRef.current) clearInterval(starIntervalRef.current);
+    };
+  }, [meteorShowerVisible]);
 
   // 深呼吸連動言葉の初期化とランダム更新
   useEffect(() => {
     if (breathingSyncWordsVisible && breathingSyncWordsMode === 'breathing') {
       if (breathingWordSelectionMode === 'random') {
         const updateWord = () => {
-          const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
-          setBreathingSyncWord(randomWord);
+          let randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+          randomWord = processWord(randomWord, excludeWords);
+          if (randomWord) setBreathingSyncWord(randomWord);
         };
         updateWord();
         const interval = setInterval(updateWord, breathingSpeed);
@@ -169,10 +270,14 @@ export default function Home() {
         setBreathingSyncWord(POSITIVE_WORDS[0]);
       }
     }
-  }, [breathingSyncWordsVisible, breathingSyncWordsMode, breathingWordSelectionMode, breathingSpeed]);
+  }, [breathingSyncWordsVisible, breathingSyncWordsMode, breathingWordSelectionMode, breathingSpeed, excludeWords]);
 
   const removeWord = (id: string) => {
     setWords((prev) => prev.filter((w) => w.id !== id));
+  };
+
+  const removeStar = (id: string) => {
+    setStars((prev) => prev.filter((s) => s.id !== id));
   };
 
   // 深呼吸ガイドの反対色を計算（文字色用）
@@ -180,33 +285,122 @@ export default function Home() {
     return getComplementaryColor(guideGradient[0]);
   }, [guideGradient]);
 
-  const handleRandomizeColors = () => {
-    const { guide, bg } = generateRandomGradients();
-    setGuideGradient(guide);
-    setBgGradient(bg);
+  // フォントサイズを自動調整
+  const autoFontSize = useMemo(() => {
+    const maxSize = breathingMaxSize / 2;
+    return Math.min(breathingSyncWordSize, maxSize);
+  }, [breathingSyncWordSize, breathingMaxSize]);
+
+  const handleRandomizeBackgroundGradient = () => {
+    const gradient = generateRandomGradient();
+    setBgGradient(gradient);
+  };
+
+  const handleRandomizeGuideGradient = () => {
+    const gradient = generateRandomGradient();
+    setGuideGradient(gradient);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCustomBackgroundImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddExcludeWord = () => {
+    if (excludeWordInput.trim()) {
+      setExcludeWords([...excludeWords, excludeWordInput.trim()]);
+      setExcludeWordInput('');
+    }
+  };
+
+  const handleRemoveExcludeWord = (index: number) => {
+    setExcludeWords(excludeWords.filter((_, i) => i !== index));
+  };
+
+  const getBackgroundStyle = () => {
+    if (imageBackgroundVisible && customBackgroundImage) {
+      return {
+        backgroundImage: `url(${customBackgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
+    }
+    return {
+      background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
+    };
   };
 
   return (
     <div 
       className="relative w-full h-screen overflow-hidden transition-all duration-1000"
-      style={{
-        background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
-      }}
+      style={getBackgroundStyle()}
     >
+      {/* 星空モード */}
+      {starfieldVisible && (
+        <div className="fixed inset-0 pointer-events-none z-0">
+          {stars.map((star) => (
+            <motion.div
+              key={star.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: `${(star.x / window.innerWidth) * 100}%`,
+                top: `${(star.y / window.innerHeight) * 100}%`,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+              }}
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: star.duration, repeat: Infinity }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 流星群モード */}
+      {meteorShowerVisible && (
+        <AnimatePresence>
+          {stars.map((star) => (
+            <motion.div
+              key={star.id}
+              className="fixed rounded-full bg-white pointer-events-none z-0"
+              style={{
+                left: `${star.x}px`,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                boxShadow: '0 0 10px rgba(255,255,255,0.8)',
+              }}
+              initial={{ y: star.y, opacity: 1 }}
+              animate={{ y: window.innerHeight + 100, opacity: 0 }}
+              transition={{ duration: star.duration, ease: 'linear' }}
+              onAnimationComplete={() => removeStar(star.id)}
+            />
+          ))}
+        </AnimatePresence>
+      )}
+
       {/* 降ってくる言葉 */}
-      {breathingSyncWordsMode === 'falling' && (
+      {fallingWordsVisible && breathingSyncWordsMode === 'falling' && (
         <AnimatePresence>
           {words.map((word) => (
             <motion.div
               key={word.id}
-              className="absolute whitespace-nowrap font-semibold select-none pointer-events-none"
+              className="absolute font-semibold select-none pointer-events-none"
               style={{
-                left: `${word.left}%`,
+                left: `${word.left}px`,
                 fontSize: `${word.fontSize}px`,
                 color: word.color,
                 opacity: wordOpacity / 100,
                 textShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 zIndex: 5,
+                maxWidth: '200px',
+                wordWrap: 'break-word',
+                whiteSpace: 'normal',
+                lineHeight: '1.2',
               }}
               initial={{ y: wordDirection === 'down' ? -50 : '110vh' }}
               animate={{ y: wordDirection === 'down' ? '110vh' : -100 }}
@@ -240,10 +434,10 @@ export default function Home() {
           >
             {breathingSyncWordsVisible && breathingSyncWordsMode === 'breathing' && (
               <motion.div
-                className="whitespace-nowrap font-bold select-none text-center px-4"
+                className="font-bold select-none text-center px-4"
                 style={{
                   color: breathingSyncWordColor,
-                  fontSize: `${breathingSyncWordSize}px`,
+                  fontSize: `${autoFontSize}px`,
                   textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 }}
                 animate={{ 
@@ -266,19 +460,21 @@ export default function Home() {
       {/* コントロールボタン */}
       <div className="fixed top-6 left-6 z-50 flex gap-2">
         <Button
+          ref={pauseButtonRef}
           variant="secondary"
           size="icon"
           className="w-12 h-12 rounded-xl shadow-md bg-white/90 hover:bg-white text-slate-900"
-          onClick={() => setIsPaused(!isPaused)}
+          onClick={() => setIsFallingWordsPaused(!isFallingWordsPaused)}
+          title="言葉が降るのみ停止/再生"
         >
-          {isPaused ? <Play size={20} /> : <Pause size={20} />}
+          {isFallingWordsPaused ? <Play size={20} /> : <Pause size={20} />}
         </Button>
         <Button
           variant="secondary"
           size="icon"
           className="w-12 h-12 rounded-xl shadow-md bg-white/90 hover:bg-white text-slate-900"
-          onClick={handleRandomizeColors}
-          title="色をランダムに変更"
+          onClick={handleRandomizeBackgroundGradient}
+          title="背景色をランダムに変更"
         >
           <RefreshCw size={20} />
         </Button>
@@ -311,7 +507,7 @@ export default function Home() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full max-w-md h-full bg-slate-50 shadow-2xl z-[101] flex flex-col"
+              className="fixed top-0 right-0 w-full max-w-md h-full bg-slate-50 shadow-2xl z-[101] flex flex-col overflow-hidden"
             >
               <div className="flex items-center justify-between p-6 bg-white border-b">
                 <h2 className="text-lg font-bold text-slate-900">設定</h2>
@@ -329,161 +525,186 @@ export default function Home() {
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
                   <TabsContent value="words" className="space-y-8 mt-0">
+                    {/* 深呼吸と連動 */}
                     <div className="border-b pb-8">
-                      <h3 className="text-sm font-bold text-slate-900 mb-4">深呼吸連動設定</h3>
+                      <h3 className="text-sm font-bold text-slate-900 mb-4">深呼吸と連動</h3>
                       
                       <div className="flex items-center justify-between mb-4">
-                        <Label className="text-sm font-semibold text-slate-700">深呼吸連動言葉を表示</Label>
+                        <Label className="text-sm font-semibold text-slate-700">表示</Label>
                         <Switch checked={breathingSyncWordsVisible} onCheckedChange={setBreathingSyncWordsVisible} />
                       </div>
 
                       {breathingSyncWordsVisible && (
                         <div className="space-y-6">
                           <div className="space-y-4">
-                            <Label className="text-sm font-semibold text-slate-700">表示モード</Label>
+                            <Label className="text-sm font-semibold text-slate-700">モード切り替え</Label>
                             <div className="grid grid-cols-2 gap-3">
                               <button
-                                onClick={() => setBreathingSyncWordsMode('falling')}
-                                className={`h-12 rounded-xl font-semibold transition-all ${
-                                  breathingSyncWordsMode === 'falling'
-                                    ? 'bg-blue-600 text-white'
+                                onClick={() => setBreathingWordSelectionMode('random')}
+                                className={`h-10 rounded-lg text-sm font-semibold transition-all ${
+                                  breathingWordSelectionMode === 'random'
+                                    ? 'bg-slate-800 text-white'
                                     : 'bg-white text-slate-700 border border-slate-200'
                                 }`}
                               >
-                                言葉を降る
+                                ランダム
                               </button>
                               <button
-                                onClick={() => setBreathingSyncWordsMode('breathing')}
-                                className={`h-12 rounded-xl font-semibold transition-all ${
-                                  breathingSyncWordsMode === 'breathing'
-                                    ? 'bg-blue-600 text-white'
+                                onClick={() => setBreathingWordSelectionMode('fixed')}
+                                className={`h-10 rounded-lg text-sm font-semibold transition-all ${
+                                  breathingWordSelectionMode === 'fixed'
+                                    ? 'bg-slate-800 text-white'
                                     : 'bg-white text-slate-700 border border-slate-200'
                                 }`}
                               >
-                                深呼吸と連動
+                                言葉を固定
                               </button>
                             </div>
                           </div>
 
-                          {breathingSyncWordsMode === 'breathing' && (
-                            <>
-                              <div className="space-y-4">
-                                <Label className="text-sm font-semibold text-slate-700">モード切り替え</Label>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <button
-                                    onClick={() => setBreathingWordSelectionMode('random')}
-                                    className={`h-10 rounded-lg text-sm font-semibold transition-all ${
-                                      breathingWordSelectionMode === 'random'
-                                        ? 'bg-slate-800 text-white'
-                                        : 'bg-white text-slate-700 border border-slate-200'
-                                    }`}
-                                  >
-                                    ランダム
-                                  </button>
-                                  <button
-                                    onClick={() => setBreathingWordSelectionMode('fixed')}
-                                    className={`h-10 rounded-lg text-sm font-semibold transition-all ${
-                                      breathingWordSelectionMode === 'fixed'
-                                        ? 'bg-slate-800 text-white'
-                                        : 'bg-white text-slate-700 border border-slate-200'
-                                    }`}
-                                  >
-                                    言葉を固定
-                                  </button>
-                                </div>
-                              </div>
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">現在の言葉</Label>
+                            <div className="p-4 bg-white border rounded-xl text-center text-slate-700 font-semibold">
+                              {breathingSyncWord}
+                            </div>
+                            <Button 
+                              className="w-full h-12 rounded-xl"
+                              onClick={() => {
+                                let randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
+                                randomWord = processWord(randomWord, excludeWords);
+                                if (randomWord) setBreathingSyncWord(randomWord);
+                              }}
+                            >
+                              言葉を変更
+                            </Button>
+                          </div>
 
-                              <div className="space-y-4">
-                                <Label className="text-sm font-semibold text-slate-700">現在の言葉</Label>
-                                <div className="p-4 bg-white border rounded-xl text-center text-slate-700 font-semibold">
-                                  {breathingSyncWord}
-                                </div>
-                                <Button 
-                                  className="w-full h-12 rounded-xl"
-                                  onClick={() => {
-                                    const randomWord = POSITIVE_WORDS[Math.floor(Math.random() * POSITIVE_WORDS.length)];
-                                    setBreathingSyncWord(randomWord);
-                                  }}
-                                >
-                                  言葉を変更
-                                </Button>
-                              </div>
-
-                              <div className="space-y-4">
-                                <Label className="text-sm font-semibold text-slate-700">文字サイズ ({breathingSyncWordSize}px)</Label>
-                                <Slider 
-                                  value={[breathingSyncWordSize]} 
-                                  min={16} 
-                                  max={64} 
-                                  step={2} 
-                                  onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
-                                />
-                              </div>
-                            </>
-                          )}
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">文字サイズ ({autoFontSize}px)</Label>
+                            <Slider 
+                              value={[breathingSyncWordSize]} 
+                              min={16} 
+                              max={64} 
+                              step={2} 
+                              onValueChange={(val) => setBreathingSyncWordSize(val[0])} 
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">速度 ({(speed / 1000).toFixed(1)}秒)</Label>
-                      <Slider 
-                        value={[speed]} 
-                        min={10000} 
-                        max={30000} 
-                        step={1000} 
-                        onValueChange={(val) => setSpeed(val[0])} 
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-semibold text-slate-700">ランダム速度 (10-30秒)</Label>
-                      <Switch checked={randomSpeed} onCheckedChange={setRandomSpeed} />
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">降下方向</Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button 
-                          variant={wordDirection === 'down' ? 'default' : 'outline'} 
-                          className="w-full h-12 rounded-xl"
-                          onClick={() => setWordDirection('down')}
-                        >
-                          <ArrowDown size={16} className="mr-2" /> 上から下
-                        </Button>
-                        <Button 
-                          variant={wordDirection === 'up' ? 'default' : 'outline'} 
-                          className="w-full h-12 rounded-xl"
-                          onClick={() => setWordDirection('up')}
-                        >
-                          <ArrowUp size={16} className="mr-2" /> 下から上
-                        </Button>
+                    {/* 言葉が降る */}
+                    <div className="border-b pb-8">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-bold text-slate-900">言葉が降る</Label>
+                        <Switch checked={fallingWordsVisible} onCheckedChange={setFallingWordsVisible} />
                       </div>
+
+                      {fallingWordsVisible && (
+                        <div className="space-y-6">
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">速度 ({(speed / 1000).toFixed(1)}秒)</Label>
+                            <Slider 
+                              value={[speed]} 
+                              min={10000} 
+                              max={30000} 
+                              step={1000} 
+                              onValueChange={(val) => setSpeed(val[0])} 
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-semibold text-slate-700">ランダム速度 (10-30秒)</Label>
+                            <Switch checked={randomSpeed} onCheckedChange={setRandomSpeed} />
+                          </div>
+
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">降下方向</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <Button 
+                                variant={wordDirection === 'down' ? 'default' : 'outline'} 
+                                className="w-full h-12 rounded-xl"
+                                onClick={() => setWordDirection('down')}
+                              >
+                                <ArrowDown size={16} className="mr-2" /> 上から下
+                              </Button>
+                              <Button 
+                                variant={wordDirection === 'up' ? 'default' : 'outline'} 
+                                className="w-full h-12 rounded-xl"
+                                onClick={() => setWordDirection('up')}
+                              >
+                                <ArrowUp size={16} className="mr-2" /> 下から上
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">文字の透明度 ({wordOpacity}%)</Label>
+                            <Slider 
+                              value={[wordOpacity]} 
+                              min={0} 
+                              max={100} 
+                              onValueChange={(val) => setWordOpacity(val[0])} 
+                            />
+                          </div>
+
+                          <div className="space-y-4">
+                            <Label className="text-sm font-semibold text-slate-700">頻度 ({frequency}ms)</Label>
+                            <Slider 
+                              value={[frequency]} 
+                              min={100} 
+                              max={1000} 
+                              step={50}
+                              onValueChange={(val) => setFrequency(val[0])} 
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">文字の透明度 ({wordOpacity}%)</Label>
-                      <Slider 
-                        value={[wordOpacity]} 
-                        min={0} 
-                        max={100} 
-                        onValueChange={(val) => setWordOpacity(val[0])} 
-                      />
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-sm font-semibold text-slate-700">頻度 ({frequency}ms)</Label>
-                      <Slider 
-                        value={[frequency]} 
-                        min={100} 
-                        max={1000} 
-                        step={50}
-                        onValueChange={(val) => setFrequency(val[0])} 
-                      />
+                    {/* 除外ワード設定 */}
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 mb-4">除外ワード設定</h3>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={excludeWordInput}
+                            onChange={(e) => setExcludeWordInput(e.target.value)}
+                            placeholder="除外する言葉を入力"
+                            className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') handleAddExcludeWord();
+                            }}
+                          />
+                          <Button 
+                            className="h-10 rounded-lg"
+                            onClick={handleAddExcludeWord}
+                          >
+                            追加
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {excludeWords.map((word, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-white p-2 rounded-lg">
+                              <span className="text-sm text-slate-700">{word}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleRemoveExcludeWord(idx)}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </TabsContent>
 
                   <TabsContent value="background" className="space-y-8 mt-0">
+                    {/* グラデーション */}
                     <div className="space-y-4">
                       <Label className="text-sm font-bold text-slate-900">背景グラデーション</Label>
                       <div className="grid grid-cols-2 gap-3">
@@ -500,9 +721,41 @@ export default function Home() {
                           className="w-full h-12 rounded-xl cursor-pointer"
                         />
                       </div>
-                      <Button className="w-full" onClick={handleRandomizeColors}>
-                        補色ペアをランダム生成
+                      <Button className="w-full" onClick={handleRandomizeBackgroundGradient}>
+                        ランダムに変更
                       </Button>
+                    </div>
+
+                    {/* 星空 */}
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold text-slate-700">星空</Label>
+                        <Switch checked={starfieldVisible} onCheckedChange={setStarfieldVisible} />
+                      </div>
+                    </div>
+
+                    {/* 流星群 */}
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold text-slate-700">流星群</Label>
+                        <Switch checked={meteorShowerVisible} onCheckedChange={setMeteorShowerVisible} />
+                      </div>
+                    </div>
+
+                    {/* 画像 */}
+                    <div className="border-t pt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold text-slate-700">画像</Label>
+                        <Switch checked={imageBackgroundVisible} onCheckedChange={setImageBackgroundVisible} />
+                      </div>
+                      {imageBackgroundVisible && (
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="w-full text-sm"
+                        />
+                      )}
                     </div>
                   </TabsContent>
 
@@ -573,6 +826,9 @@ export default function Home() {
                               className="w-full h-12 rounded-xl cursor-pointer"
                             />
                           </div>
+                          <Button className="w-full" onClick={handleRandomizeGuideGradient}>
+                            ランダムに変更
+                          </Button>
                         </div>
                       </>
                     )}
