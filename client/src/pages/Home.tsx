@@ -308,13 +308,14 @@ export default function Home() {
       breathingScaleRef.current = newScale;
       
       // 深呼吸が最小サイズ（0.5）に到達したタイミングでワード更新
-      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && breathingWordSelectionMode === 'random') {
-        setBreathingSyncWord(allWords[Math.floor(Math.random() * allWords.length)]);
+      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && breathingWordSelectionMode === 'random' && allWords.length > 0) {
+        const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+        setBreathingSyncWord(processWord(randomWord, excludeWords));
       }
     }, 16); // 60fps
 
     return () => clearInterval(unifiedInterval);
-  }, [breathingSpeed, breathingWordSelectionMode, allWords];
+  }, [breathingSpeed, breathingWordSelectionMode, allWords, excludeWords];
 
   // 言葉を追加するループ
   useEffect(() => {
