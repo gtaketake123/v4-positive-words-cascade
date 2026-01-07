@@ -178,6 +178,7 @@ export default function Home() {
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
   const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('fixed');
   const [breathingSyncWordColor, setBreathingSyncWordColor] = useState<'white' | 'black' | 'gray'>('white');
+  const [breathingCycleCount, setBreathingCycleCount] = useState(0);
   
   // 星空・流星群設定
   const [starfieldFrequency, setStarfieldFrequency] = useState(100);
@@ -292,9 +293,11 @@ export default function Home() {
 
   // 統合タイマー：深呼吸アニメーション＋ワード更新（B1要件1）
   const [breathingScale, setBreathingScale] = useState(0.5);
+  const [lastCycleTime, setLastCycleTime] = useState(Date.now());
   
   useEffect(() => {
     const startTime = Date.now();
+    let lastCycleUpdate = 0;
     
     // 統合タイマー：60fps（16ms）で実行
     const unifiedInterval = setInterval(() => {
@@ -307,13 +310,23 @@ export default function Home() {
       breathingScaleRef.current = newScale;
       
       // 深呼吸が最小サイズ（0.5）に到達したタイミングでワード更新
-      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && breathingWordSelectionMode === 'random') {
-        setBreathingSyncWord(allWords[Math.floor(Math.random() * allWords.length)]);
+      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && elapsed - lastCycleUpdate > breathingSpeed * 0.4) {
+        lastCycleUpdate = elapsed;
+        
+        // B3修正：1回目のサイクルのみ「おかえりなさい」固定、2回目以降ランダム
+        if (breathingCycleCount === 0) {
+          // 1回目：「おかえりなさい」固定
+          setBreathingSyncWord('おかえりなさい');
+          setBreathingCycleCount(1);
+        } else if (breathingWordSelectionMode === 'random') {
+          // 2回目以降：ランダム表示
+          setBreathingSyncWord(allWords[Math.floor(Math.random() * allWords.length)]);
+        }
       }
     }, 16); // 60fps
 
     return () => clearInterval(unifiedInterval);
-  }, [breathingSpeed, breathingWordSelectionMode, allWords]);
+  }, [breathingSpeed, breathingWordSelectionMode, allWords, breathingCycleCount]);
 
   // 言葉を追加するループ
   useEffect(() => {
@@ -741,6 +754,28 @@ export default function Home() {
 
             {/* 背景タブ */}
             <TabsContent value="background" className="space-y-4">
+              <div>
+                <Label>グラデーション色</Label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="color"
+                    value={bgGradient[0]}
+                    onChange={(e) => setBgGradient([e.target.value, bgGradient[1]])}
+                    className="w-12 h-10 border rounded cursor-pointer"
+                    title="グラデーション開始色"
+                  />
+                  <input
+                    type="color"
+                    value={bgGradient[1]}
+                    onChange={(e) => setBgGradient([bgGradient[0], e.target.value])}
+                    className="w-12 h-10 border rounded cursor-pointer"
+                    title="グラデーション終了色"
+                  />
+                  <Button onClick={randomizeBgGradient} size="sm" variant="outline">
+                    ランダム
+                  </Button>
+                </div>
+              </div>
               <div>
                 <Label>グラデーションアニメーション</Label>
                 <Switch checked={bgGradientAnimated} onCheckedChange={setBgGradientAnimated} />
