@@ -1,4 +1,4 @@
-'use client';
+import React from 'react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -174,11 +174,10 @@ export default function Home() {
   
   // 深呼吸連動言葉表示設定
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
-  const [breathingSyncWord, setBreathingSyncWord] = useState<string>('おかえりなさい');
+  const [breathingSyncWord, setBreathingSyncWord] = useState<string>('');
   const [breathingSyncWordSize, setBreathingSyncWordSize] = useState(32);
-  const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('fixed');
+  const [breathingWordSelectionMode, setBreathingWordSelectionMode] = useState<'random' | 'fixed'>('random');
   const [breathingSyncWordColor, setBreathingSyncWordColor] = useState<'white' | 'black' | 'gray'>('white');
-  const [breathingCycleCount, setBreathingCycleCount] = useState(0);
   
   // 星空・流星群設定
   const [starfieldFrequency, setStarfieldFrequency] = useState(100);
@@ -293,7 +292,6 @@ export default function Home() {
 
   // 統合タイマー：深呼吸アニメーション＋ワード更新（B1要件1）
   const [breathingScale, setBreathingScale] = useState(0.5);
-  const [lastCycleTime, setLastCycleTime] = useState(Date.now());
   
   useEffect(() => {
     const startTime = Date.now();
@@ -310,23 +308,13 @@ export default function Home() {
       breathingScaleRef.current = newScale;
       
       // 深呼吸が最小サイズ（0.5）に到達したタイミングでワード更新
-      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && elapsed - lastCycleUpdate > breathingSpeed * 0.4) {
-        lastCycleUpdate = elapsed;
-        
-        // B3修正：1回目のサイクルのみ「おかえりなさい」固定、2回目以降ランダム
-        if (breathingCycleCount === 0) {
-          // 1回目：「おかえりなさい」固定
-          setBreathingSyncWord('おかえりなさい');
-          setBreathingCycleCount(1);
-        } else if (breathingWordSelectionMode === 'random') {
-          // 2回目以降：ランダム表示
-          setBreathingSyncWord(allWords[Math.floor(Math.random() * allWords.length)]);
-        }
+      if (Math.abs(elapsed - breathingSpeed / 2) < 100 && breathingWordSelectionMode === 'random') {
+        setBreathingSyncWord(allWords[Math.floor(Math.random() * allWords.length)]);
       }
     }, 16); // 60fps
 
     return () => clearInterval(unifiedInterval);
-  }, [breathingSpeed, breathingWordSelectionMode, allWords, breathingCycleCount]);
+  }, [breathingSpeed, breathingWordSelectionMode, allWords];
 
   // 言葉を追加するループ
   useEffect(() => {
@@ -458,32 +446,35 @@ export default function Home() {
   }, [bgmTrack]);
 
   // グラデーションアニメーション用のCSS（B1要件2）
-  const gradientAnimationStyle = bgGradientAnimated ? {
-    background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
-    animation: `gradientShift ${bgGradientAnimationDuration}s ease infinite`,
-  } : {
-    background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
+  // HSL色空間での滑らかなグラデーション補間
+  const [animatedGradient, setAnimatedGradient] = useState(`radial-gradient(circle at center in hsl longer hue, ${bgGradient[0]} 0%, ${bgGradient[1]} 100%)`);
+  
+  useEffect(() => {
+    if (!bgGradientAnimated) {
+      setAnimatedGradient(`linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`);
+      return;
+    }
+    
+    const startTime = Date.now();
+    const animationInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = (elapsed % (bgGradientAnimationDuration * 1000)) / (bgGradientAnimationDuration * 1000);
+      const angle = progress * 360;
+      const x = 50 + 30 * Math.cos((angle * Math.PI) / 180);
+      const y = 50 + 30 * Math.sin((angle * Math.PI) / 180);
+      const gradient = `radial-gradient(circle at ${x}% ${y}% in hsl longer hue, ${bgGradient[0]} 0%, ${bgGradient[1]} 100%)`;
+      setAnimatedGradient(gradient);
+    }, 16);
+    
+    return () => clearInterval(animationInterval);
+  }, [bgGradientAnimated, bgGradient, bgGradientAnimationDuration]);
+  
+  const gradientAnimationStyle = {
+    background: animatedGradient,
   };
 
   return (
     <div className="w-full h-screen overflow-hidden relative" style={gradientAnimationStyle}>
-      {/* グラデーションアニメーション用のスタイル */}
-      {bgGradientAnimated && (
-        <style>{`
-          @keyframes gradientShift {
-            0% {
-              background: linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]});
-            }
-            50% {
-              background: linear-gradient(225deg, ${bgGradient[0]}, ${bgGradient[1]});
-            }
-            100% {
-              background: linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]});
-            }
-          }
-        `}</style>
-      )}
-
       {/* 星空モード */}
       {starfieldVisible && (
         <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
@@ -512,12 +503,11 @@ export default function Home() {
             {stars.map((star) => (
               <motion.div
                 key={star.id}
-                initial={{ y: -50, opacity: 1 }}
-                animate={{ y: window.innerHeight + 50, opacity: 0 }}
+                initial={{ x: star.x, y: star.y, opacity: 1 }}
+                animate={{ x: star.x + 200, y: window.innerHeight + 100, opacity: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: star.duration }}
                 className="absolute"
-                style={{ left: `${star.x}px` }}
               >
                 <ShapeRenderer shape={star.shape} size={star.size} color="#ffffff" />
               </motion.div>
@@ -526,32 +516,73 @@ export default function Home() {
         </div>
       )}
 
-      {/* 背景画像モード */}
+      {/* 画像背景 */}
       {imageBackgroundVisible && customBackgroundImage && (
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: `url(${customBackgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.7,
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${customBackgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            zIndex: 5,
+          }}
+        />
       )}
 
-      {/* 言葉が降る */}
+      {/* 深呼吸ガイド */}
+      {breathingVisible && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 15 }}>
+          <motion.div
+            animate={{ scale: breathingScale }}
+            transition={{ type: 'tween', duration: 0 }}
+            className="rounded-full"
+            style={{
+              width: `${breathingMaxSize}px`,
+              height: `${breathingMaxSize}px`,
+              background: `linear-gradient(135deg, ${guideGradient[0]}, ${guideGradient[1]})`,
+              opacity: breathingOpacity / 100,
+            }}
+          />
+        </div>
+      )}
+
+      {/* 深呼吸連動言葉 */}
+      {breathingSyncWordsVisible && breathingSyncWord && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 20 }}>
+          <motion.div
+            animate={{ scale: breathingScale }}
+            transition={{ type: 'tween', duration: 0 }}
+            style={{
+              fontSize: `${autoFontSize}px`,
+              color: breathingSyncWordColorMap[breathingSyncWordColor],
+              fontWeight: 'bold',
+              textAlign: 'center',
+              maxWidth: '80%',
+            }}
+          >
+            {breathingSyncWord}
+          </motion.div>
+        </div>
+      )}
+
+      {/* 落ちる言葉 */}
       {isFallingWordsVisible && (
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 20 }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 8 }}>
           <AnimatePresence>
             {words.map((word) => (
               <motion.div
                 key={word.id}
-                initial={{ y: word.top, opacity: 1 }}
-                animate={{ y: window.innerHeight }}
+                initial={{ y: -50, opacity: 1 }}
+                animate={{ y: window.innerHeight + 50, opacity: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: word.duration }}
-                className="absolute font-bold"
+                transition={{ duration: word.duration, ease: 'linear' }}
+                className="absolute"
                 style={{
                   left: `${word.left}px`,
+                  top: `${word.top}px`,
                   fontSize: `${word.fontSize}px`,
                   color: word.color,
+                  fontWeight: 'bold',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -562,55 +593,32 @@ export default function Home() {
         </div>
       )}
 
-      {/* 深呼吸ガイド */}
-      {breathingVisible && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <motion.div
-            animate={{ scale: breathingScale }}
-            transition={{ duration: 0.1 }}
-            className="rounded-full flex items-center justify-center text-center"
-            style={{
-              width: `${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
-              height: `${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
-              background: `linear-gradient(135deg, ${guideGradient[0]}, ${guideGradient[1]})`,
-              opacity: breathingOpacity / 100,
-            }}
-          >
-            {breathingSyncWordsVisible && breathingSyncWord && (
-              <motion.div
-                animate={{ opacity: breathingScale }}
-                style={{
-                  fontSize: `${autoFontSize}px`,
-                  color: breathingSyncWordColorMap[breathingSyncWordColor],
-                  maxWidth: '90%',
-                  wordWrap: 'break-word',
-                  lineHeight: '1.2',
-                }}
-              >
-                {breathingSyncWord}
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-      )}
-
-      {/* ホーム画面左上のコントロールボタン */}
+      {/* ホーム画面左上のコントロール */}
       <div className="absolute top-4 left-4 flex gap-2 z-50">
-        {/* 言葉が降るON/OFF */}
+        {/* 言葉表示 ON/OFF */}
         <button
-          ref={pauseButtonRef}
           onClick={() => setIsFallingWordsVisible(!isFallingWordsVisible)}
           className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
-          title="言葉が降る"
+          title="言葉表示"
         >
-          {isFallingWordsVisible ? <Pause size={20} /> : <Play size={20} />}
+          {isFallingWordsVisible ? <Play size={20} /> : <Pause size={20} />}
         </button>
 
-        {/* 背景グラデーションランダム */}
+        {/* 一時停止 */}
+        <button
+          ref={pauseButtonRef}
+          onClick={() => setIsFallingWordsPaused(!isFallingWordsPaused)}
+          className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+          title="一時停止"
+        >
+          {isFallingWordsPaused ? <Play size={20} /> : <Pause size={20} />}
+        </button>
+
+        {/* 背景グラデーション色ランダム */}
         <button
           onClick={randomizeBgGradient}
           className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
-          title="背景グラデーション"
+          title="背景色"
         >
           <RotateCw size={20} />
         </button>
