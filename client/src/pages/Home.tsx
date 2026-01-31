@@ -79,37 +79,37 @@ const generateRandomGradient = () => {
 const ShapeRenderer = ({ shape, size, color }: { shape: ShapeType; size: number; color: string }) => {
   switch (shape) {
     case 'dot':
-      return <div className="rounded-full" style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+      return <div className="rounded-full" style={{ width: `<LaTex>${size}px`, height: `$</LaTex>{size}px`, backgroundColor: color }} />;
     case 'star':
       return (
-        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+        <div style={{ fontSize: `<LaTex>${size}px`, color, lineHeight: '1' }}>
           ★
         </div>
       );
     case 'circle':
-      return <div className="rounded-full border-2" style={{ width: `${size}px`, height: `${size}px`, borderColor: color }} />;
+      return <div className="rounded-full border-2" style={{ width: `$</LaTex>{size}px`, height: `<LaTex>${size}px`, borderColor: color }} />;
     case 'square':
-      return <div style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+      return <div style={{ width: `$</LaTex>{size}px`, height: `<LaTex>${size}px`, backgroundColor: color }} />;
     case 'heart':
       return (
-        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+        <div style={{ fontSize: `$</LaTex>{size}px`, color, lineHeight: '1' }}>
           ❤️
         </div>
       );
     case 'snow':
       return (
-        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+        <div style={{ fontSize: `<LaTex>${size}px`, color, lineHeight: '1' }}>
           ❄️
         </div>
       );
     case 'thumbsup':
       return (
-        <div style={{ fontSize: `${size}px`, color, lineHeight: '1' }}>
+        <div style={{ fontSize: `$</LaTex>{size}px`, color, lineHeight: '1' }}>
           👍
         </div>
       );
     default:
-      return <div className="rounded-full" style={{ width: `${size}px`, height: `${size}px`, backgroundColor: color }} />;
+      return <div className="rounded-full" style={{ width: `<LaTex>${size}px`, height: `$</LaTex>{size}px`, backgroundColor: color }} />;
   }
 };
 
@@ -344,7 +344,10 @@ export default function Home() {
     if (!breathingSyncWord) return 32;
     const maxWidth = 300 * breathingScale;
     const charWidth = maxWidth / breathingSyncWord.length;
-    return Math.max(12, Math.min(48, charWidth * 1.5));
+    const baseSize = Math.max(12, Math.min(48, charWidth * 1.5));
+    // 呼吸スケールに部分的に同期（最小70%、最大100%）
+    const scaledSize = baseSize * (0.7 + breathingScale * 0.3);
+    return scaledSize;
   }, [breathingSyncWord, breathingScale]);
 
   // 深呼吸連動言葉の文字色
@@ -356,7 +359,7 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen overflow-hidden relative" style={{
-      background: `linear-gradient(135deg, ${bgGradient[0]}, ${bgGradient[1]})`,
+      background: `linear-gradient(135deg, <LaTex>${bgGradient[0]}, $</LaTex>{bgGradient[1]})`,
     }}>
       {/* 星空モード */}
       {starfieldVisible && (
@@ -370,7 +373,7 @@ export default function Home() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: star.duration, repeat: Infinity }}
                 className="absolute"
-                style={{ left: `${star.x}px`, top: `${star.y}px` }}
+                style={{ left: `<LaTex>${star.x}px`, top: `$</LaTex>{star.y}px` }}
               >
                 <ShapeRenderer shape={star.shape} size={star.size} color="#ffffff" />
               </motion.div>
@@ -423,8 +426,8 @@ export default function Home() {
                 transition={{ duration: word.duration }}
                 className="absolute font-bold"
                 style={{
-                  left: `${word.left}px`,
-                  fontSize: `${word.fontSize}px`,
+                  left: `<LaTex>${word.left}px`,
+                  fontSize: `$</LaTex>{word.fontSize}px`,
                   color: word.color,
                   whiteSpace: 'nowrap',
                 }}
@@ -444,9 +447,9 @@ export default function Home() {
             transition={{ duration: 0.1 }}
             className="rounded-full flex items-center justify-center text-center"
             style={{
-              width: `${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
-              height: `${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
-              background: `linear-gradient(135deg, ${guideGradient[0]}, ${guideGradient[1]})`,
+              width: `<LaTex>${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
+              height: `$</LaTex>{breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
+              background: `linear-gradient(135deg, <LaTex>${guideGradient[0]}, $</LaTex>{guideGradient[1]})`,
               opacity: breathingOpacity / 100,
             }}
           >
