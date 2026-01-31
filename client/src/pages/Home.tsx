@@ -339,14 +339,14 @@ export default function Home() {
     setBgGradient(palette);
   };
 
-  // 深呼吸連動言葉の自動フォントサイズ調整
+  // 案1修正：深呼吸連動言葉のテキストサイズを呼吸スケールに同期
+  // テキストサイズ = 最小16px + (最大32px - 最小16px) × breathingScale
+  // これにより、呼吸サークルが収縮してもテキストが常に読める範囲で動く
   const autoFontSize = (() => {
     if (!breathingSyncWord) return 32;
-    const maxWidth = 300 * breathingScale;
-    const charWidth = maxWidth / breathingSyncWord.length;
-    const baseSize = Math.max(12, Math.min(48, charWidth * 1.5));
-    // 呼吸スケールに部分的に同期（最小70%、最大100%）
-    const scaledSize = baseSize * (0.7 + breathingScale * 0.3);
+    const minSize = 16;  // 最小フォントサイズ（常に読める）
+    const maxSize = 32;  // 最大フォントサイズ
+    const scaledSize = minSize + (maxSize - minSize) * breathingScale;
     return scaledSize;
   })();
 
