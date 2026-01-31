@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -340,7 +340,7 @@ export default function Home() {
   };
 
   // 深呼吸連動言葉の自動フォントサイズ調整
-  const autoFontSize = useMemo(() => {
+  const autoFontSize = (() => {
     if (!breathingSyncWord) return 32;
     const maxWidth = 300 * breathingScale;
     const charWidth = maxWidth / breathingSyncWord.length;
@@ -348,7 +348,7 @@ export default function Home() {
     // 呼吸スケールに部分的に同期（最小70%、最大100%）
     const scaledSize = baseSize * (0.7 + breathingScale * 0.3);
     return scaledSize;
-  }, [breathingSyncWord, breathingScale]);
+  })();
 
   // 深呼吸連動言葉の文字色
   const breathingSyncWordColorMap = {
