@@ -122,20 +122,20 @@ export default function Home() {
   const [frequency, setFrequency] = useState(300);
   const [showSettings, setShowSettings] = useState(false);
   
-  // 背景設定
-  const [bgGradient, setBgGradient] = useState(['#96fbc4', '#f9f586']);
+  // 背景設定 - 初期値を確実に設定（白色を避ける）
+  const [bgGradient, setBgGradient] = useState<[string, string]>(['#96fbc4', '#f9f586']);
   const [starfieldVisible, setStarfieldVisible] = useState(false);
   const [meteorShowerVisible, setMeteorShowerVisible] = useState(false);
   const [customBackgroundImage, setCustomBackgroundImage] = useState<string | null>(null);
   const [imageBackgroundVisible, setImageBackgroundVisible] = useState(false);
   
-  // 深呼吸設定
+  // 深呼吸設定 - 初期値を確実に設定
   const [breathingVisible, setBreathingVisible] = useState(true);
   const [breathingSpeed, setBreathingSpeed] = useState(18000);
   const [breathingOpacity, setBreathingOpacity] = useState(70);
   const [breathingMinSize, setBreathingMinSize] = useState(50);
   const [breathingMaxSize, setBreathingMaxSize] = useState(400);
-  const [guideGradient, setGuideGradient] = useState(['#eecda3', '#ef629f']);
+  const [guideGradient, setGuideGradient] = useState<[string, string]>(['#eecda3', '#ef629f']);
   
   // 深呼吸連動言葉表示設定
   const [breathingSyncWordsVisible, setBreathingSyncWordsVisible] = useState(true);
@@ -329,13 +329,13 @@ export default function Home() {
 
   // 深呼吸ガイドの色をランダムに変更
   const randomizeGuideGradient = () => {
-    const palette = generateRandomGradient();
+    const palette = generateRandomGradient() as [string, string];
     setGuideGradient(palette);
   };
 
   // 背景グラデーションをランダムに変更
   const randomizeBgGradient = () => {
-    const palette = generateRandomGradient();
+    const palette = generateRandomGradient() as [string, string];
     setBgGradient(palette);
   };
 
@@ -354,9 +354,13 @@ export default function Home() {
     'gray': '#808080',
   };
 
+  // 背景グラデーション文字列（常に有効な値を保証）
+  const bgGradientString = `linear-gradient(135deg, <LaTex>${bgGradient[0] || '#96fbc4'}, $</LaTex>{bgGradient[1] || '#f9f586'})`;
+  const guideGradientString = `linear-gradient(135deg, <LaTex>${guideGradient[0] || '#eecda3'}, $</LaTex>{guideGradient[1] || '#ef629f'})`;
+
   return (
     <div className="w-full h-screen overflow-hidden relative" style={{
-      background: `linear-gradient(135deg, <LaTex>${bgGradient[0]}, $</LaTex>{bgGradient[1]})`,
+      background: bgGradientString,
     }}>
       {/* 星空モード */}
       {starfieldVisible && (
@@ -446,7 +450,7 @@ export default function Home() {
             style={{
               width: `<LaTex>${breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
               height: `$</LaTex>{breathingMinSize + (breathingMaxSize - breathingMinSize) * breathingScale}px`,
-              background: `linear-gradient(135deg, <LaTex>${guideGradient[0]}, $</LaTex>{guideGradient[1]})`,
+              background: guideGradientString,
               opacity: breathingOpacity / 100,
             }}
           >
