@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -339,16 +339,13 @@ export default function Home() {
     setBgGradient(palette);
   };
 
-  // 案1修正：深呼吸連動言葉のテキストサイズを呼吸スケールに同期
-  // テキストサイズ = 最小16px + (最大32px - 最小16px) × breathingScale
-  // これにより、呼吸サークルが収縮してもテキストが常に読める範囲で動く
-  const autoFontSize = (() => {
+  // 深呼吸連動言葉の自動フォントサイズ調整
+  const autoFontSize = useMemo(() => {
     if (!breathingSyncWord) return 32;
-    const minSize = 16;  // 最小フォントサイズ（常に読める）
-    const maxSize = 32;  // 最大フォントサイズ
-    const scaledSize = minSize + (maxSize - minSize) * breathingScale;
-    return scaledSize;
-  })();
+    const maxWidth = 300 * breathingScale;
+    const charWidth = maxWidth / breathingSyncWord.length;
+    return Math.max(12, Math.min(48, charWidth * 1.5));
+  }, [breathingSyncWord, breathingScale]);
 
   // 深呼吸連動言葉の文字色
   const breathingSyncWordColorMap = {
